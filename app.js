@@ -256,6 +256,815 @@ function findPart(partNumber) {
   return app.parts.findIndex((part) => part.part === partNumber);
 }
 
+// ==================== GAMIFICATION & BADGES ====================
+function loadGamification() {
+  try {
+    const rawStreak = JSON.parse(localStorage.getItem(streakKey) || "{}");
+    const today = new Date().toDateString();
+    if (rawStreak.lastDate === today) {
+      app.streak = rawStreak.count || 1;
+    } else {
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      if (rawStreak.lastDate === yesterday) {
+        app.streak = (rawStreak.count || 0) + 1;
+      } else {
+        app.streak = 1;
+      }
+      localStorage.setItem(streakKey, JSON.stringify({ count: app.streak, lastDate: today }));
+    }
+  } catch {
+    app.streak = 1;
+  }
+
+  try {
+    app.xp = Number(localStorage.getItem(xpKey)) || 50;
+  } catch {
+    app.xp = 50;
+  }
+
+  try {
+    app.badges = JSON.parse(localStorage.getItem(badgesKey) || "[]");
+  } catch {
+    app.badges = [];
+  }
+
+  try {
+    app.masteredCards = JSON.parse(localStorage.getItem(masteredCardsKey) || "[]");
+  } catch {
+    app.masteredCards = [];
+  }
+}
+
+function addXP(amount, reason = "") {
+  app.xp += amount;
+  try {
+    localStorage.setItem(xpKey, String(app.xp));
+  } catch (e) {
+    console.error("Could not save XP.", e);
+  }
+  renderGamificationHeader();
+  if (reason) showToast(`+${amount} XP: ${reason}!`);
+}
+
+function unlockBadge(badgeId) {
+  if (app.badges.includes(badgeId)) return;
+  app.badges.push(badgeId);
+  try {
+    localStorage.setItem(badgesKey, JSON.stringify(app.badges));
+  } catch (e) {
+    console.error("Could not save badges.", e);
+  }
+  const badge = badgesList.find((b) => b.id === badgeId);
+  if (badge) {
+    showToast(`🏆 Badge Unlocked: ${badge.name}!`);
+    addXP(100, `Unlocked ${badge.name}`);
+  }
+  renderBadges();
+}
+
+function renderGamificationHeader() {
+  const streakEl = document.getElementById("streak-count");
+  const xpEl = document.getElementById("xp-count");
+  if (streakEl) streakEl.textContent = String(app.streak);
+  if (xpEl) xpEl.textContent = String(app.xp);
+}
+
+function renderBadges() {
+  const grid = document.getElementById("badges-grid");
+  const countEl = document.getElementById("badge-total-count");
+  if (!grid || !countEl) return;
+  countEl.textContent = `${app.badges.length} / ${badgesList.length}`;
+  grid.innerHTML = badgesList.map((badge) => {
+    const unlocked = app.badges.includes(badge.id);
+    return `<div class="badge-item${unlocked ? "" : " is-locked"}" title="${escapeHtml(badge.desc)}">
+      <span class="badge-icon">${badge.icon}</span>
+      <strong>${escapeHtml(badge.name)}</strong>
+      <small>${unlocked ? "Unlocked" : "Locked"}</small>
+    </div>`;
+  }).join("");
+}
+
+// ==================== AUDIO LESSON PLAYER ====================
+function stopAudio() {
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+  app.audioState.isPlaying = false;
+  updateAudioUi();
+}
+
+function toggleAudioSpeed() {
+  const rates = [1.0, 1.25, 1.5];
+  const nextIdx = (rates.indexOf(app.audioState.rate) + 1) % rates.length;
+  app.audioState.rate = rates[nextIdx];
+  const btn = document.getElementById("audio-speed-btn");
+  if (btn) btn.textContent = `${app.audioState.rate}x`;
+  if (app.audioState.isPlaying) {
+    stopAudio();
+    togglePlayAudio(app.parts[app.currentPart]);
+  }
+}
+
+function updateAudioUi() {
+  const playBtn = document.getElementById("audio-play-btn");
+  const wave = document.getElementById("audio-wave");
+  const status = document.getElementById("audio-status-text");
+  if (playBtn) playBtn.textContent = app.audioState.isPlaying ? "❚❚ Pause" : "▶ Play";
+  if (wave) wave.classList.toggle("is-playing", app.audioState.isPlaying);
+  if (status) status.textContent = app.audioState.isPlaying ? "Narrating lesson in natural speech..." : "Natural speech audio guide · Listen hands-free";
+}
+
+function togglePlayAudio(part) {
+  if (!("speechSynthesis" in window)) {
+    showToast("Text-to-speech is not supported in this browser.");
+    return;
+  }
+  if (app.audioState.isPlaying) {
+    stopAudio();
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const textParts = [
+    `Lesson: ${part.chapter}.`,
+    `Objective: ${part.objective}.`,
+    part.summary,
+    ...part.sections.map((s) => `${s.title}. ${s.paragraphs.join(" ")}`)
+  ];
+  const fullText = textParts.join(" ");
+  const utterance = new SpeechSynthesisUtterance(fullText);
+  utterance.rate = app.audioState.rate;
+  utterance.onstart = () => {
+    app.audioState.isPlaying = true;
+    updateAudioUi();
+    unlockBadge("audio_listener");
+  };
+  utterance.onend = () => {
+    app.audioState.isPlaying = false;
+    updateAudioUi();
+    addXP(25, "Finished audio guide");
+  };
+  utterance.onerror = () => {
+    app.audioState.isPlaying = false;
+    updateAudioUi();
+  };
+  app.audioState.utterance = utterance;
+  window.speechSynthesis.speak(utterance);
+}
+
+// ==================== LESSON NOTES ====================
+function getLessonNotes() {
+  try {
+    return JSON.parse(localStorage.getItem(notesKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function loadLessonNote(index) {
+  const notes = getLessonNotes();
+  const textarea = document.getElementById("lesson-notes-input");
+  if (textarea) textarea.value = notes[`${app.courseId}-${index}`] || "";
+}
+
+function saveLessonNote(index, text) {
+  const notes = getLessonNotes();
+  notes[`${app.courseId}-${index}`] = text;
+  try {
+    localStorage.setItem(notesKey, JSON.stringify(notes));
+    const status = document.getElementById("notes-status");
+    if (status) status.textContent = `Saved at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    if (text.trim().length > 10) {
+      unlockBadge("notes_taker");
+      addXP(15, "Study notes saved");
+    }
+  } catch (e) {
+    console.error("Could not save lesson note.", e);
+  }
+}
+
+function exportAllNotes() {
+  const notes = getLessonNotes();
+  const entries = Object.entries(notes);
+  if (!entries.length) {
+    showToast("No notes found yet. Type some takeaways first!");
+    return;
+  }
+  let markdown = `# NeuroVerse AI ML Learning Hub — My Study Notes\n\nGenerated on ${new Date().toLocaleDateString()}.\n\n`;
+  entries.forEach(([key, val]) => {
+    if (val.trim()) {
+      markdown += `## ${key.toUpperCase()}\n\n${val.trim()}\n\n---\n\n`;
+    }
+  });
+  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "neuroverse-my-study-notes.md";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showToast("All notes downloaded as Markdown!");
+}
+
+// ==================== AI MENTOR ====================
+const mentorKnowledge = {
+  eli5: {
+    default: "Think of this topic as teaching a computer to recognize patterns the same way humans do: by looking at many good examples, making small predictions, checking where it made mistakes, and gently correcting its internal settings until it gets reliable.",
+    0: "AI is simply teaching machines to make smart decisions. Traditional programming gives the computer strict recipes. Machine learning instead shows the computer 1,000 photos of cats and lets it figure out what makes a cat a cat.",
+    1: "Different machine learning models are like different tools in a toolbox. A ruler (Linear Regression) is great for straight lines, while a pair of scissors (Decision Tree) is great for cutting the data into rule boxes.",
+    2: "Explainable AI (XAI) is like asking a doctor: 'Why did you diagnose this condition?' instead of just blindly swallowing a prescription. It shows which symptoms (features) influenced the decision most.",
+    3: "Neural networks are like layers of filters. The first layer detects simple edges, the next combines edges into shapes, and the final layer recognizes full faces or objects.",
+    4: "Computer vision turns images into numbers (grid of pixels: Red, Green, Blue). Neural networks slide tiny magnifying glasses (convolution kernels) across the grid to spot textures and objects.",
+    5: "Transformers read an entire sentence all at once and use 'attention' to connect words that belong together—like connecting the word 'it' to 'the dog' three sentences earlier.",
+    6: "Generative AI doesn't just categorize data; it creates new content (text, images, audio) by predicting what token or pixel naturally comes next.",
+    7: "An AI agent is like an assistant who doesn't just talk, but can browse the web, execute code in a terminal, check errors, and stop when the job is done."
+  },
+  analogy: {
+    default: "Imagine learning to play basketball: at first, you shoot and miss. Your brain notices the error and adjusts your wrist angle. Next time, your shot is closer. That continuous feedback loop is exactly how machine learning optimization works.",
+    0: "Think of AI as an orchestra: the conductor is Artificial Intelligence, the violin section is Machine Learning, the soloist is Deep Learning, and the sheet music is the dataset.",
+    1: "Decision Trees are like a 20 Questions game. Support Vector Machines are like drawing a wide highway between two rival soccer teams so nobody crosses over.",
+    2: "Feature importance is like a jury asking: 'If this piece of evidence didn't exist, would our verdict change?'",
+    3: "Gradient descent is like being lost on a misty mountain in heavy fog, feeling the incline with your boots, and taking small steps in the steepest downward direction to find the valley.",
+    4: "Convolutional layers are like stamped cookie cutters moving across dough to imprint and find specific shapes.",
+    5: "Self-attention is like highlighter pens of different colors: when reading 'The bank approved the loan because it was creditworthy', attention draws a bright link between 'it' and 'bank'.",
+    6: "Diffusion models generate images like a sculptor starting with a messy block of marble (random static noise) and gradually chiseling away noise until a masterpiece emerges.",
+    7: "An agent is like an astronaut following a checklist on Mars: observe surroundings, check instrument readings, pick a tool, drill a rock, inspect sample, record results."
+  },
+  math: {
+    default: "All machine learning boils down to three mathematical pillars: (1) An objective loss function L(θ), (2) An architecture function f(x; θ), and (3) An optimization update θ ← θ − η∇L.",
+    0: "Probability formulation: Modeling P(Y|X) with Bayes' theorem P(Y|X) = P(X|Y)P(Y) / P(X).",
+    1: "Logistic loss: Binary cross entropy L = −[y log(σ(z)) + (1−y) log(1−σ(z))], where σ(z) = 1/(1+e⁻ᶻ). Notice that when y=1 and σ(z)→1, loss approaches zero.",
+    2: "Shapley value: φᵢ = ∑ [|S|!(|F|−|S|−1)! / |F|!] · [f(S ∪ {i}) − f(S)] across all subsets S not containing feature i.",
+    3: "Chain rule backpropagation: ∂L/∂Wˡ = (∂L/∂aˡ) · (∂aˡ/∂zˡ) · (∂zˡ/∂Wˡ). Gradient vector points in direction of steepest ascent.",
+    4: "2D Convolution: (I * K)(i, j) = ∑∑ I(i−m, j−n) · K(m, n). Preserves spatial translation equivariance.",
+    5: "Scaled Dot-Product Attention: Attention(Q, K, V) = softmax(Q Kᵀ / √d) V. Complexity scales quadratically O(N²) with sequence length N.",
+    6: "Autoregressive log-likelihood: Maximize ∑ log P(wₜ | w₁, w₂, ..., wₜ₋₁) across text corpora.",
+    7: "Markov Decision Process (MDP): Defined by tuple (S, A, P, R, γ) where agent seeks policy π*(a|s) maximizing expected discounted cumulative reward."
+  },
+  industry: {
+    default: "In industry production systems, 80% of real-world value comes not from complex architectures, but from clean data engineering, strict test sets, and monitoring distribution drift over time.",
+    0: "Every recommendation feed (Netflix, Spotify, YouTube) uses this foundational framing to rank content for millions of concurrent users.",
+    1: "Financial fraud detection and credit underwriting still rely heavily on Gradient Boosted Trees (XGBoost/LightGBM) due to their unmatched performance on tabular data.",
+    2: "Healthcare and lending algorithms in the EU and US are legally required to provide explainable model attribution under GDPR and Fair Lending regulations.",
+    3: "Autonomous driving systems at Waymo and Tesla use massive deep neural networks trained on millions of miles of synthetic and logged camera sensor data.",
+    4: "Medical imaging clinics use vision models to triage radiology scans in seconds, highlighting anomalies before human radiologists review them.",
+    5: "Search engines (Google, Bing) use transformer embeddings (BERT, ColBERT) to semantically index and rank billions of web documents.",
+    6: "Coding assistants (GitHub Copilot, Cursor) utilize autoregressive transformers to predict the next lines of code from surrounding context.",
+    7: "Autonomous coding workflows and financial trading desks deploy multi-step agent loops that query databases, write test scripts, and auto-repair failures."
+  },
+  gotcha: {
+    default: "Top beginner mistake: fitting preprocessing transformations (like StandardScaler or Imputer) on the full dataset before splitting. This leaks test statistics into training!",
+    0: "Confusing the task with the model: 'LLM' is not a task; summarization and translation are tasks.",
+    1: "Evaluating accuracy on an imbalanced dataset: if 99% of transactions are legitimate, a dummy model that predicts 'not fraud' every time achieves 99% accuracy while catching zero fraud!",
+    2: "Believing feature importance proves causation: an explanation shows what the model correlated, NOT the real-world cause.",
+    3: "Setting the learning rate too high: leads to exploding loss / NaN. Too low: takes millions of steps with zero progress.",
+    4: "Failing to check class balance or image resolution: resizing non-square images without preserving aspect ratios distorts spatial features.",
+    5: "Assuming high model confidence equals truth: LLMs generate fluent language tokens, not verified facts.",
+    6: "Setting temperature = 0 expecting zero errors: low temperature makes outputs deterministic, not necessarily factually accurate.",
+    7: "Creating agents without infinite-loop safeguards: always specify a maximum tool-call budget and strict timeout."
+  }
+};
+
+function getMentorResponse(promptType, part, index) {
+  const categoryMap = mentorKnowledge[promptType] || {};
+  const specific = categoryMap[index];
+  if (specific) return specific;
+  const def = categoryMap.default || "Every concept in machine learning connects a mathematical goal with an empirical optimization loop.";
+  return `${def} Specifically for <strong>${escapeHtml(part.chapter)}</strong>: focus on how <em>${escapeHtml(part.objective)}</em> ensures model decisions remain verifiable.`;
+}
+
+function answerMentorCustom(question, part) {
+  const q = question.toLowerCase();
+  unlockBadge("mentor_asker");
+  addXP(10, "Asked AI Mentor");
+  if (q.includes("code") || q.includes("python") || q.includes("run") || q.includes("syntax")) {
+    return `In this exercise for <strong>${escapeHtml(part.chapter)}</strong>, ensure your variables exactly match the required prompt names. You can press <code>Ctrl+Enter</code> (or <code>Cmd+Enter</code> on Mac) to run code immediately in Pyodide. If you're stuck, click "Need a hint?" or test simple sub-expressions with <code>print()</code> first.`;
+  }
+  if (q.includes("overfit") || q.includes("variance") || q.includes("bias") || q.includes("split")) {
+    return `A core principle in <strong>${escapeHtml(part.chapter)}</strong>: Overfitting happens when your model memorizes quirks in the training partition. Always evaluate on unseen test data, and never tune hyperparameters against the test set!`;
+  }
+  if (q.includes("formula") || q.includes("equation") || q.includes("math") || q.includes("loss")) {
+    return `The core equation for this lesson links the prediction to the true label: minimizing error via the loss function. Check the <strong>Formula Book</strong> in the Study Library (top menu) for exact derivations and formulas!`;
+  }
+  if (q.includes("why") || q.includes("benefit") || q.includes("real world")) {
+    return `In industrial and academic research, <strong>${escapeHtml(part.chapter)}</strong> is critical because it avoids false assumptions and ensures reproducibility. Without this step, models fail when deployed to production.`;
+  }
+  return `Great question about <strong>${escapeHtml(part.chapter)}</strong>! Here is the key takeaway: remember that <em>${escapeHtml(part.objective)}</em>. Start by running the worked example, then test your understanding with the knowledge check.`;
+}
+
+// ==================== ONBOARDING DIAGNOSTIC ====================
+const onboardingState = {
+  answers: { experience: "", goal: "", time: "" },
+  matchedCourse: "handbook",
+  matchedTrack: "practitioner"
+};
+
+function openOnboardingDialog() {
+  onboardingState.answers = { experience: "", goal: "", time: "" };
+  document.getElementById("onboarding-step-1").hidden = false;
+  document.getElementById("onboarding-step-2").hidden = true;
+  document.getElementById("onboarding-step-3").hidden = true;
+  document.getElementById("onboarding-result").hidden = true;
+  document.getElementById("onboarding-dialog").showModal();
+}
+
+function handleOnboardingChoice(field, value) {
+  onboardingState.answers[field] = value;
+  if (field === "experience") {
+    document.getElementById("onboarding-step-1").hidden = true;
+    document.getElementById("onboarding-step-2").hidden = false;
+  } else if (field === "goal") {
+    document.getElementById("onboarding-step-2").hidden = true;
+    document.getElementById("onboarding-step-3").hidden = false;
+  } else if (field === "time") {
+    document.getElementById("onboarding-step-3").hidden = true;
+    showOnboardingResult();
+  }
+}
+
+function showOnboardingResult() {
+  const { experience, goal } = onboardingState.answers;
+  const resultDiv = document.getElementById("onboarding-result");
+  const titleEl = document.getElementById("result-match-title");
+  const descEl = document.getElementById("result-match-desc");
+  let course = "handbook";
+  let track = "practitioner";
+
+  if (experience === "none" || goal === "python_ml") {
+    course = "beginner";
+    track = "practitioner";
+    titleEl.textContent = "Python → Machine Learning (14-Week Beginner Pathway)";
+    descEl.textContent = "We matched you to our foundational curriculum! It takes you gently from basic Python data structures all the way to training real scikit-learn models and completing an ML capstone.";
+  } else if (goal === "research" || experience === "experienced") {
+    course = "handbook";
+    track = "frontier";
+    titleEl.textContent = "The AI Researcher's Handbook (Frontier Track)";
+    descEl.textContent = "We matched you to the Frontier Researcher Track! You'll dive straight into mathematical rigor, transformers, explainability, loss dynamics, and publication-ready research methodology.";
+  } else {
+    course = "handbook";
+    track = "practitioner";
+    titleEl.textContent = "The AI Researcher's Handbook (Practitioner Track)";
+    descEl.textContent = "We matched you to the Practitioner Track! You'll master classic classifiers, deep learning, vision models, leakage prevention, and reliable evaluation metrics.";
+  }
+
+  onboardingState.matchedCourse = course;
+  onboardingState.matchedTrack = track;
+  resultDiv.hidden = false;
+}
+
+async function applyOnboardingMatch() {
+  const { matchedCourse, matchedTrack } = onboardingState;
+  document.getElementById("onboarding-dialog").close();
+  if (matchedCourse) {
+    app.courseId = matchedCourse;
+    app.track = matchedTrack || "practitioner";
+    try {
+      localStorage.setItem(selectedCourseKey, app.courseId);
+    } catch {}
+    app.parts = app.courses[app.courseId];
+    renderNav();
+    openPart(0);
+    showToast(`Enrolled in ${matchedCourse === "beginner" ? "Python → ML" : "AI Researcher"}!`);
+  }
+}
+
+// ==================== PYTHON SANDBOX ====================
+const sandboxTemplates = {
+  intro: `# 1. Python Basics & Data Structures
+numbers = [12, 45, 67, 89, 23, 90, 34]
+squared_evens = [n ** 2 for n in numbers if n % 2 == 0]
+
+data_dict = {
+    "framework": "Pyodide / Python 3.12",
+    "total_numbers": len(numbers),
+    "mean_value": sum(numbers) / len(numbers),
+    "squared_evens": squared_evens
+}
+
+print("=== Python Data Structures Summary ===")
+for key, value in data_dict.items():
+    print(f"  {key}: {value}")
+`,
+  math: `# 2. Vector Mathematics & Statistics
+import math
+
+vector_a = [1.2, 3.4, 0.5, 2.1, 4.0]
+vector_b = [0.8, 3.1, 0.9, 2.5, 3.8]
+
+dot_product = sum(a * b for a, b in zip(vector_a, vector_b))
+euclidean_dist = math.sqrt(sum((a - b) ** 2 for a, b in zip(vector_a, vector_b)))
+norm_a = math.sqrt(sum(a ** 2 for a in vector_a))
+norm_b = math.sqrt(sum(b ** 2 for b in vector_b))
+cosine_sim = dot_product / (norm_a * norm_b)
+
+print(f"Vector A: {vector_a}")
+print(f"Vector B: {vector_b}")
+print(f"Dot Product:        {dot_product:.4f}")
+print(f"Euclidean Distance: {euclidean_dist:.4f}")
+print(f"Cosine Similarity:  {cosine_sim:.4f}")
+`,
+  classifier: `# 3. Logistic Model Decision Boundary Simulation
+import math
+
+def sigmoid(z):
+    return 1.0 / (1.0 + math.exp(-max(min(z, 500), -500)))
+
+w1, w2, b = 1.8, -1.2, -0.3
+test_points = [
+    (1.0, 0.5, 1),
+    (-0.5, 1.2, 0),
+    (2.1, 0.2, 1),
+    (-1.0, 2.0, 0),
+    (0.8, 0.9, 1)
+]
+
+print("=== Logistic Classifier Test ===")
+correct = 0
+for x1, x2, true_label in test_points:
+    logit = w1 * x1 + w2 * x2 + b
+    prob = sigmoid(logit)
+    pred_label = 1 if prob >= 0.5 else 0
+    is_correct = (pred_label == true_label)
+    if is_correct: correct += 1
+    print(f"Point ({x1:.1f}, {x2:.1f}) -> Logit: {logit:5.2f} | Prob: {prob:.2%} | Pred: {pred_label} (Truth: {true_label}) {'✓' if is_correct else '✗'}")
+
+print(f"\\nHeld-out Accuracy: {correct / len(test_points):.0%}")
+`,
+  metrics: `# 4. Confusion Matrix, Precision, Recall, and F1
+actual    = [1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1]
+predicted = [1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1]
+
+tp = sum(a == 1 and p == 1 for a, p in zip(actual, predicted))
+fp = sum(a == 0 and p == 1 for a, p in zip(actual, predicted))
+tn = sum(a == 0 and p == 0 for a, p in zip(actual, predicted))
+fn = sum(a == 1 and p == 0 for a, p in zip(actual, predicted))
+
+accuracy  = (tp + tn) / len(actual)
+precision = tp / (tp + fp) if (tp + fp) else 0.0
+recall    = tp / (tp + fn) if (tp + fn) else 0.0
+f1_score  = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
+
+print("=== Classification Metrics Report ===")
+print(f"Confusion Matrix:")
+print(f"  [TN={tn:2d}  FP={fp:2d}]")
+print(f"  [FN={fn:2d}  TP={tp:2d}]\\n")
+print(f"Accuracy:  {accuracy:.1%}")
+print(f"Precision: {precision:.1%} (True Positives / Predicted Positives)")
+print(f"Recall:    {recall:.1%} (True Positives / Actual Positives)")
+print(f"F1-Score:  {f1_score:.3f} (Harmonic Mean)")
+`,
+  neural: `# 5. Toy Perceptron / Neural Activation Functions
+import math
+
+def relu(x): return max(0.0, x)
+def sigmoid(x): return 1.0 / (1.0 + math.exp(-max(min(x, 500), -500)))
+
+inputs = [-2.5, -1.0, 0.0, 1.0, 2.5]
+
+print("=== Activation Functions Comparison ===")
+print("  Input  |  ReLU   | Sigmoid")
+print("----------------------------")
+for x in inputs:
+    print(f" {x:6.2f}  | {relu(x):6.2f}  | {sigmoid(x):7.4f}")
+`
+};
+
+function openSandboxDialog() {
+  const dialog = document.getElementById("sandbox-dialog");
+  const editor = document.getElementById("sandbox-code-editor");
+  if (!editor.value.trim()) {
+    editor.value = sandboxTemplates.intro;
+  }
+  dialog.showModal();
+}
+
+function loadSandboxTemplate(key) {
+  const editor = document.getElementById("sandbox-code-editor");
+  if (sandboxTemplates[key]) {
+    editor.value = sandboxTemplates[key];
+  }
+}
+
+function runSandboxCode() {
+  const editor = document.getElementById("sandbox-code-editor");
+  const outputEl = document.getElementById("sandbox-output-console");
+  const statusEl = document.getElementById("sandbox-status");
+  const runBtn = document.getElementById("sandbox-run-btn");
+  if (!editor || !outputEl) return;
+  outputEl.textContent = "Running Python code in WebAssembly worker…";
+  statusEl.textContent = "Executing…";
+  runBtn.disabled = true;
+
+  const id = ++app.sandboxRequestId;
+  const worker = createWorker();
+
+  const handleMessage = ({ data }) => {
+    if (data.id !== id) return;
+    runBtn.disabled = false;
+    statusEl.textContent = "Execution Complete";
+    if (data.error) {
+      outputEl.textContent = `Traceback (most recent call last):\n${data.error}`;
+    } else {
+      const clean = data.output.replace("__ACADEMY_EXERCISE_PASSED__", "").trim();
+      outputEl.textContent = clean || "(Code ran successfully with no printed output.)";
+      unlockBadge("python_runner");
+      addXP(20, "Sandbox code executed");
+    }
+  };
+
+  const currentOnMessage = worker.onmessage;
+  worker.onmessage = (event) => {
+    if (event.data.id === id) {
+      handleMessage(event);
+    } else if (currentOnMessage) {
+      currentOnMessage(event);
+    }
+  };
+
+  worker.postMessage({
+    id,
+    code: editor.value,
+    tests: "",
+    mode: "run"
+  });
+}
+
+// ==================== CERTIFICATE ====================
+function openCertificateDialog() {
+  const dialog = document.getElementById("certificate-dialog");
+  const recipientInput = document.getElementById("cert-recipient-input");
+  const recipientName = document.getElementById("cert-recipient-name");
+  const courseName = document.getElementById("cert-course-name");
+  const dateVal = document.getElementById("cert-date-value");
+  const idVal = document.getElementById("cert-id-value");
+
+  const savedName = localStorage.getItem(certRecipientKey) || (app.user ? app.user.name : "Learner");
+  recipientInput.value = savedName;
+  recipientName.textContent = savedName;
+  courseName.textContent = app.courseId === "beginner" ? "Python → Machine Learning (14-Week Curriculum)" : "The AI Researcher's Handbook (Second Edition)";
+  dateVal.textContent = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  
+  const codeSuffix = Math.abs((savedName + app.courseId).split("").reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) | 0, 0)).toString(16).toUpperCase().padStart(5, "X");
+  idVal.textContent = `NV-2026-${codeSuffix}`;
+
+  dialog.showModal();
+}
+
+// ==================== FLASHCARDS DECK ====================
+const flashcardsDeck = [
+  {
+    category: "foundations",
+    badge: "PART I · FOUNDATIONS",
+    frontTitle: "AI vs ML vs Deep Learning",
+    frontText: "What is the fundamental distinction between these three concentric fields of modern artificial intelligence?",
+    backTitle: "The Hierarchy of Learning",
+    backText: "• <strong>Artificial Intelligence</strong>: The overarching discipline of creating systems that perform intelligent tasks.<br>• <strong>Machine Learning</strong>: Systems learn statistical patterns from data rather than explicit hand-written rules.<br>• <strong>Deep Learning</strong>: ML methods utilizing multi-layer neural networks capable of hierarchical representation learning.",
+    backIntuition: "Think of AI as transportation, ML as automobiles, and Deep Learning as electric vehicles."
+  },
+  {
+    category: "ml",
+    badge: "PART II · MACHINE LEARNING",
+    frontTitle: "The Bias-Variance Tradeoff",
+    frontText: "How do underfitting and overfitting relate to bias and variance in statistical learning?",
+    backTitle: "Balancing Model Flexibility",
+    backText: "• <strong>High Bias (Underfitting)</strong>: The model is overly simplistic and cannot capture underlying data regularities.<br>• <strong>High Variance (Overfitting)</strong>: The model is excessively complex, fitting random noise and idiosyncrasies of the training sample.",
+    backIntuition: "Total generalization error = Bias² + Variance + Irreducible Noise."
+  },
+  {
+    category: "ml",
+    badge: "PART II · MACHINE LEARNING",
+    frontTitle: "Data Leakage Prevention",
+    frontText: "What constitutes data leakage, and what is the cardinal rule to prevent it during preprocessing?",
+    backTitle: "The Split-First Principle",
+    backText: "Data leakage occurs whenever information from outside the training partition enters training or model selection.<br><br><strong>Golden Rule</strong>: Always split into Train, Validation, and Test BEFORE calculating any scalers, imputers, or encoders. Fit only on Train, then transform Validation/Test.",
+    backIntuition: "Never look at the final exam before studying the textbook."
+  },
+  {
+    category: "ml",
+    badge: "PART II · TRADITIONAL MODELS",
+    frontTitle: "Random Forest vs Gradient Boosting",
+    frontText: "What is the algorithmic difference between Bagging (Random Forest) and Boosting (GBDT / XGBoost)?",
+    backTitle: "Parallel Voting vs Sequential Correction",
+    backText: "• <strong>Random Forest (Bagging)</strong>: Trains many deep trees in parallel on bootstrap samples. Predictions are averaged to reduce variance.<br>• <strong>Gradient Boosted Trees (Boosting)</strong>: Trains shallow trees sequentially. Each new tree fits the residual errors (gradients) of the ensemble so far, reducing bias.",
+    backIntuition: "Random Forest is a committee of experts voting; Boosting is a student correcting mistakes after each question."
+  },
+  {
+    category: "evaluation",
+    badge: "PART X · EVALUATION",
+    frontTitle: "Precision vs Recall vs F1",
+    frontText: "When should an ML practitioner prioritize Precision over Recall, and vice-versa?",
+    backTitle: "Matching Metrics to the Cost of Errors",
+    backText: "• <strong>Precision = TP / (TP + FP)</strong>: Prioritize when false alarms are costly (e.g. spam filtering, blocking valid transactions).<br>• <strong>Recall = TP / (TP + FN)</strong>: Prioritize when missing a positive is critical (e.g. cancer diagnosis, fault detection).<br>• <strong>F1 Score</strong>: The harmonic mean, balancing both on imbalanced data.",
+    backIntuition: "Precision is quality of positives; Recall is coverage of positives."
+  },
+  {
+    category: "neural",
+    badge: "PART IV · DEEP LEARNING",
+    frontTitle: "Backpropagation & Gradient Descent",
+    frontText: "How do gradients computed by the chain rule guide parameter updates in neural networks?",
+    backTitle: "Navigating the Loss Landscape",
+    backText: "Backpropagation applies the calculus chain rule from output loss backward through network layers to calculate ∂Loss/∂W for each weight.<br><br>The optimizer updates parameters: <code>W ← W − η · ∂Loss/∂W</code>, where η is the learning rate, taking steps down the steepest slope.",
+    backIntuition: "Walking down a foggy mountain by feeling which direction slopes downward under your feet."
+  },
+  {
+    category: "transformers",
+    badge: "PART VI · TRANSFORMERS",
+    frontTitle: "Self-Attention Mechanism",
+    frontText: "What do Queries (Q), Keys (K), and Values (V) represent in the attention formula?",
+    backTitle: "Soft Retrieval Across Sequences",
+    backText: "<code>Attention(Q, K, V) = softmax(Q·Kᵀ / √d_k) · V</code><br><br>• <strong>Query (Q)</strong>: What a token searches for.<br>• <strong>Key (K)</strong>: What a token advertises.<br>• <strong>Value (V)</strong>: The content passed along if a query-key match is strong.<br>• <strong>√d_k scaling</strong> prevents dot products from growing excessively large.",
+    backIntuition: "Query is a search query, Key is a page title/tags, Value is the webpage content."
+  },
+  {
+    category: "transformers",
+    badge: "PART XI · GENERATIVE AI",
+    frontTitle: "Decoding: Temperature & Top-p",
+    frontText: "How do temperature and nucleus (top-p) sampling alter the probability distribution over candidate tokens?",
+    backTitle: "Shaping the Sampling Tail",
+    backText: "• <strong>Temperature (T)</strong>: Divides logits by T before softmax. As T → 0, distribution becomes greedy/deterministic. As T increases, distribution flattens, increasing diversity.<br>• <strong>Top-p (Nucleus)</strong>: Samples only from the smallest set of tokens whose cumulative probability exceeds p (e.g. 0.90), cutting off the unpredictable long tail.",
+    backIntuition: "Temperature controls variety; Top-p prevents nonsensical words."
+  },
+  {
+    category: "research",
+    badge: "PART XIII · RESEARCH METHODOLOGY",
+    frontTitle: "Designing a Rigorous Ablation Study",
+    frontText: "What is an ablation study in machine learning research, and why is it mandatory for scientific credibility?",
+    backTitle: "Isolating What Actually Works",
+    backText: "An ablation removes or modifies exactly one architectural feature, loss term, or preprocessing trick at a time, holding all other hyperparameters and random seeds constant.<br><br>Without ablations, you cannot attribute whether an improvement came from your novel idea or lucky random seeds.",
+    backIntuition: "Testing a car engine by changing one spark plug at a time rather than changing the entire car."
+  },
+  {
+    category: "foundations",
+    badge: "PART VIII · AGENTS",
+    frontTitle: "The ReAct Loop for AI Agents",
+    frontText: "What is the Reason + Act (ReAct) cycle in modern tool-augmented language agents?",
+    backTitle: "Interleaving Thought and Action",
+    backText: "Instead of producing an answer in a single forward pass, an agent alternates between:<br>1. <strong>Thought</strong>: Reasoning explicitly about state and goal.<br>2. <strong>Action</strong>: Selecting an external tool (Search, Code Execution, API, Database).<br>3. <strong>Observation</strong>: Receiving the structured environmental result.<br>4. <strong>Update</strong>: Deciding whether goal is satisfied or next action needed.",
+    backIntuition: "Thinking out loud before opening a book, reading the page, then summarizing the answer."
+  }
+];
+
+function renderFlashcards() {
+  const filtered = flashcardsDeck.filter((card) => {
+    if (app.flashcardFilter === "all") return true;
+    return card.category === app.flashcardFilter;
+  });
+  if (app.flashcardIndex >= filtered.length) app.flashcardIndex = 0;
+  const card = filtered[app.flashcardIndex] || flashcardsDeck[0];
+  const isMastered = app.masteredCards.includes(card.frontTitle);
+
+  document.getElementById("library-count").textContent = `CARD ${app.flashcardIndex + 1} OF ${filtered.length} · ${app.masteredCards.length} MASTERED`;
+
+  return `<div class="flashcards-container">
+    <div class="flashcard-filters">
+      ${[
+        ["all", "All Decks"],
+        ["foundations", "Foundations"],
+        ["ml", "Traditional ML"],
+        ["evaluation", "Evaluation & Metrics"],
+        ["neural", "Neural Networks"],
+        ["transformers", "Transformers & LLMs"],
+        ["research", "Research Methods"]
+      ].map(([cat, label]) => `<button class="filter-btn${app.flashcardFilter === cat ? " is-active" : ""}" type="button" data-flash-filter="${cat}">${label}</button>`).join("")}
+    </div>
+
+    <div class="flashcard-perspective" id="flashcard-box">
+      <div class="flashcard-inner" id="flashcard-inner">
+        <div class="flashcard-face flashcard-front">
+          <div>
+            <span class="card-header-badge">${card.badge}</span>
+            <div class="card-main-content">
+              <h3>${card.frontTitle}</h3>
+              <p>${card.frontText}</p>
+            </div>
+          </div>
+          <span class="card-flip-prompt">Click anywhere or press Space to reveal answer ↺</span>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div>
+            <span class="card-header-badge">${card.badge} · ANSWER</span>
+            <div class="card-main-content">
+              <h3>${card.backTitle}</h3>
+              <div class="card-back-explanation">${card.backText}</div>
+              ${card.backIntuition ? `<p style="margin-top:10px;font-size:12px;color:#205e40;"><strong>💡 Intuition:</strong> ${card.backIntuition}</p>` : ""}
+            </div>
+          </div>
+          <span class="card-flip-prompt">Click to flip back ↺</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard-controls">
+      <button class="button button-light" id="card-prev-btn" type="button">← Previous</button>
+      <button class="button button-light" id="card-flip-btn" type="button">Flip Card ⟳</button>
+      <button class="button button-dark" id="card-next-btn" type="button">Next →</button>
+      <button class="button button-light" id="card-master-btn" type="button">${isMastered ? "✓ Mastered" : "Mark Mastered"}</button>
+      <button class="button button-light" id="card-shuffle-btn" type="button">Shuffle 🔀</button>
+    </div>
+  </div>`;
+}
+
+// ==================== CHEAT SHEETS ====================
+function renderCheatsheets() {
+  document.getElementById("library-count").textContent = "QUICK REFERENCE GUIDES";
+  return `<div class="cheatsheets-container">
+    <article class="cheatsheet-section">
+      <h3>1. Python for AI & Data Science Essentials</h3>
+      <p>Idiomatic patterns frequently needed in modern AI data pipelines and scientific computing.</p>
+      <div class="code-snippet-box">
+        <button class="copy-snippet-btn" type="button" data-copy="python-essentials">Copy</button>
+        <pre><code id="snippet-python-essentials"># List comprehension with condition
+clean_data = [x.strip().lower() for x in raw_tokens if len(x) > 2]
+
+# Dictionary comprehension
+word_to_id = {token: idx for idx, token in enumerate(vocabulary)}
+
+# Fast zip and pairwise enumeration
+for step, (x_batch, y_batch) in enumerate(zip(inputs, targets)):
+    pass
+
+# Safe dictionary retrieval with default
+learning_rate = config.get("lr", 0.001)</code></pre>
+      </div>
+    </article>
+
+    <article class="cheatsheet-section">
+      <h3>2. NumPy Vector & Matrix Operations</h3>
+      <p>High-performance vector operations and broadcasting rules.</p>
+      <div class="code-snippet-box">
+        <button class="copy-snippet-btn" type="button" data-copy="numpy-essentials">Copy</button>
+        <pre><code id="snippet-numpy-essentials">import numpy as np
+
+# Shapes & Reshaping
+X = np.zeros((100, 10))          # 100 samples, 10 features
+X_flat = X.reshape(-1)           # Flatten to 1D
+X_transposed = X.T               # Matrix transpose (10, 100)
+
+# Matrix Dot Product
+W = np.random.randn(10, 2)       # Weight matrix (10, 2)
+logits = X @ W                   # Shape (100, 2)
+
+# Normalization across training axis
+mean = np.mean(X, axis=0)
+std = np.std(X, axis=0) + 1e-8
+X_normalized = (X - mean) / std</code></pre>
+      </div>
+    </article>
+
+    <article class="cheatsheet-section">
+      <h3>3. Scikit-Learn Pipelines & Model Validation</h3>
+      <p>Standard workflow preventing data leakage and optimizing hyperparameters.</p>
+      <div class="code-snippet-box">
+        <button class="copy-snippet-btn" type="button" data-copy="sklearn-pipeline">Copy</button>
+        <pre><code id="snippet-sklearn-pipeline">from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+
+# 1. Split FIRST to prevent leakage
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, random_state=42, stratify=y
+)
+
+# 2. Encapsulate preprocessing inside a Pipeline
+pipeline = Pipeline([
+    ("scaler", StandardScaler()),
+    ("classifier", RandomForestClassifier(n_estimators=100, random_state=42))
+])
+
+# 3. Fit strictly on training partition
+pipeline.fit(X_train, y_train)
+
+# 4. Final held-out evaluation
+test_score = pipeline.score(X_test, y_test)</code></pre>
+      </div>
+    </article>
+
+    <article class="cheatsheet-section">
+      <h3>4. Machine Learning Evaluation Decision Tree</h3>
+      <p>How to choose the mathematically correct metric for your error costs.</p>
+      <div class="code-snippet-box">
+        <button class="copy-snippet-btn" type="button" data-copy="metrics-guide">Copy</button>
+        <pre><code id="snippet-metrics-guide">• Balanced Classes & Equal Error Cost:
+  → Use ACCURACY = (TP + TN) / Total
+
+• Imbalanced Classes or High Cost of False Positives (e.g. Spam, Fraud Block):
+  → Use PRECISION = TP / (TP + FP)
+
+• Imbalanced Classes or High Cost of False Negatives (e.g. Disease Screen, Fault):
+  → Use RECALL / SENSITIVITY = TP / (TP + FN)
+
+• Balance of Both Precision and Recall on Skewed Data:
+  → Use F1-SCORE = 2 * (P * R) / (P + R)
+
+• Threshold-Independent Discriminative Capability:
+  → Use ROC-AUC (Area Under Receiver Operating Characteristic)</code></pre>
+      </div>
+    </article>
+  </div>`;
+}
+
 function renderNav() {
   const nav = document.getElementById("chapter-nav");
   nav.setAttribute("aria-label", `${unitWord()} navigation`);

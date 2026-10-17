@@ -333,7 +333,11 @@ class AcademyHandler(BaseHTTPRequestHandler):
         )
 
     def send_course(self, course_id: str) -> None:
-        course_files = {"handbook": "course.json", "beginner": "beginner_course.json"}
+        course_files = {
+            "handbook": "course.json",
+            "beginner": "beginner_course.json",
+            "pydsml": "pydsml_course.json",
+        }
         course_file = course_files.get(course_id)
         if course_file is None:
             self.send_json(HTTPStatus.BAD_REQUEST, {"error": "Choose a supported course."})
