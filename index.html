@@ -63,6 +63,9 @@
             <span class="nav-toggle-icon">☰</span>
             <span class="nav-toggle-text">Curriculum</span>
           </button>
+          <button class="desktop-sidebar-toggle" id="desktop-sidebar-toggle" type="button" aria-label="Toggle sidebar" title="Toggle Sidebar">
+            <span class="toggle-icon">◧</span>
+          </button>
           <div class="breadcrumbs"><span>My learning</span><span class="crumb-slash">/</span><strong id="breadcrumb-current">Overview</strong></div>
           <div class="topbar-right">
             <div class="streak-pill" id="streak-pill" title="Daily Learning Streak & XP">
@@ -70,13 +73,50 @@
               <span class="xp-divider">·</span>
               <span class="xp-badge"><strong id="xp-count">50</strong> XP</span>
             </div>
-            <button class="topbar-action-btn" id="onboarding-open" type="button" title="Diagnostic Assessment">Path Finder</button>
-            <button class="topbar-action-btn" id="sandbox-open" type="button" title="Open Interactive Python Sandbox">Python Sandbox</button>
-            <button class="topbar-action-btn" id="flashcards-top-btn" type="button" title="Interactive Flashcards Deck">Flashcards</button>
-            <button class="topbar-action-btn" id="certificate-open" type="button" title="View or Claim Certificate">Certificate</button>
+            <div class="topbar-actions-group" id="topbar-actions-group">
+              <button class="topbar-action-btn" id="onboarding-open" type="button" title="Diagnostic Assessment">Path Finder</button>
+              <button class="topbar-action-btn" id="sandbox-open" type="button" title="Open Interactive Python Sandbox">Python Sandbox</button>
+              <button class="topbar-action-btn" id="flashcards-top-btn" type="button" title="Interactive Flashcards Deck">Flashcards</button>
+              <button class="topbar-action-btn" id="certificate-open" type="button" title="View or Claim Certificate">Certificate</button>
+            </div>
+            <div class="topbar-tools-dropdown" id="topbar-tools-dropdown">
+              <button class="topbar-tools-btn" id="topbar-tools-btn" type="button" aria-expanded="false" aria-haspopup="true">
+                <span>Tools</span> <span class="dropdown-caret" aria-hidden="true">▾</span>
+              </button>
+              <div class="topbar-tools-menu" id="topbar-tools-menu" role="menu">
+                <button class="menu-item" type="button" id="menu-pathfinder">
+                  <span class="menu-item-tag">Quiz</span>
+                  <div>
+                    <strong>Path Finder</strong>
+                    <small>30-sec diagnostic advisor</small>
+                  </div>
+                </button>
+                <button class="menu-item" type="button" id="menu-sandbox">
+                  <span class="menu-item-tag">REPL</span>
+                  <div>
+                    <strong>Python Sandbox</strong>
+                    <small>Pyodide browser workspace</small>
+                  </div>
+                </button>
+                <button class="menu-item" type="button" id="menu-flashcards">
+                  <span class="menu-item-tag">Cards</span>
+                  <div>
+                    <strong>Flashcards</strong>
+                    <small>AIML memory retention deck</small>
+                  </div>
+                </button>
+                <button class="menu-item" type="button" id="menu-certificate">
+                  <span class="menu-item-tag">Cert</span>
+                  <div>
+                    <strong>Certificate</strong>
+                    <small>Verifiable academic credential</small>
+                  </div>
+                </button>
+              </div>
+            </div>
             <label class="search-field"><span aria-hidden="true">⌕</span><input id="course-search" type="search" placeholder="Search lessons" aria-label="Search lessons"></label>
             <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"><span id="theme-symbol" aria-hidden="true">☾</span></button>
-            <span class="saved-label" id="sync-status"><span class="saved-dot"></span> Sign in to sync progress</span>
+            <span class="saved-label" id="sync-status" title="Sync status"><span class="saved-dot"></span> <span class="sync-text">Sign in to sync progress</span></span>
             <button class="button button-account" id="auth-open" type="button">Sign in</button>
             <div class="avatar" id="avatar" aria-label="Guest profile">G</div>
           </div>

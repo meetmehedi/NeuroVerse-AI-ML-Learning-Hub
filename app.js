@@ -2966,6 +2966,66 @@ document.getElementById("library-search").addEventListener("input", (event) => {
   input.setSelectionRange(input.value.length, input.value.length);
 });
 
+// Desktop Sidebar Collapse Toggle
+const desktopSidebarToggle = document.getElementById("desktop-sidebar-toggle");
+const appShell = document.querySelector(".app-shell");
+
+if (desktopSidebarToggle && appShell) {
+  try {
+    if (localStorage.getItem("neuroverse_sidebar_collapsed") === "true") {
+      appShell.classList.add("sidebar-collapsed");
+      const icon = desktopSidebarToggle.querySelector(".toggle-icon");
+      if (icon) icon.textContent = "◨";
+    }
+  } catch {}
+
+  desktopSidebarToggle.addEventListener("click", () => {
+    const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
+    try {
+      localStorage.setItem("neuroverse_sidebar_collapsed", isCollapsed ? "true" : "false");
+    } catch {}
+    const icon = desktopSidebarToggle.querySelector(".toggle-icon");
+    if (icon) icon.textContent = isCollapsed ? "◨" : "◧";
+  });
+}
+
+// Topbar Tools Dropdown
+const toolsBtn = document.getElementById("topbar-tools-btn");
+const toolsMenu = document.getElementById("topbar-tools-menu");
+
+if (toolsBtn && toolsMenu) {
+  toolsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = toolsMenu.classList.toggle("is-open");
+    toolsBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
+  document.addEventListener("click", () => {
+    toolsMenu.classList.remove("is-open");
+    toolsBtn.setAttribute("aria-expanded", "false");
+  });
+}
+
+document.getElementById("menu-pathfinder")?.addEventListener("click", () => {
+  toolsMenu?.classList.remove("is-open");
+  openOnboardingDialog();
+});
+document.getElementById("menu-sandbox")?.addEventListener("click", () => {
+  toolsMenu?.classList.remove("is-open");
+  openSandboxDialog();
+});
+document.getElementById("menu-flashcards")?.addEventListener("click", () => {
+  toolsMenu?.classList.remove("is-open");
+  app.libraryTab = "flashcards";
+  app.librarySearch = "";
+  document.getElementById("library-search").value = "";
+  renderLibrary();
+  document.getElementById("library-dialog").showModal();
+});
+document.getElementById("menu-certificate")?.addEventListener("click", () => {
+  toolsMenu?.classList.remove("is-open");
+  openCertificateDialog();
+});
+
 // Flashcards Topbar Trigger
 const flashcardsTopBtn = document.getElementById("flashcards-top-btn");
 if (flashcardsTopBtn) {
