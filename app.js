@@ -152,6 +152,24 @@ const themeStorageKey = "neuroverse-academy-theme-v1";
 const researchStudioKey = "neuroverse-research-studio-v1";
 const beginnerProgressKey = "neuroverse-python-ml-progress-v1";
 const selectedCourseKey = "neuroverse-selected-course-v1";
+const streakKey = "neuroverse-streak-v1";
+const xpKey = "neuroverse-xp-v1";
+const badgesKey = "neuroverse-badges-v1";
+const notesKey = "neuroverse-notes-v1";
+const masteredCardsKey = "neuroverse-mastered-cards-v1";
+const certRecipientKey = "neuroverse-cert-recipient-v1";
+
+const badgesList = [
+  { id: "first_lesson", name: "First Spark", icon: "🌱", desc: "Started your first lesson" },
+  { id: "python_runner", name: "Code Pioneer", icon: "💻", desc: "Ran Python in the browser" },
+  { id: "quiz_master", name: "Quiz Ace", icon: "🎯", desc: "Passed a knowledge check" },
+  { id: "audio_listener", name: "Attentive Ear", icon: "🎧", desc: "Listened to an audio lesson" },
+  { id: "mentor_asker", name: "Inquisitive", icon: "🤖", desc: "Consulted the AI Mentor" },
+  { id: "notes_taker", name: "Scholar", icon: "📝", desc: "Saved personal study notes" },
+  { id: "flashcard_pro", name: "Memory Master", icon: "🎴", desc: "Reviewed flashcards" },
+  { id: "handbook_grad", name: "Certified Graduate", icon: "🎓", desc: "Completed the full curriculum" }
+];
+
 const app = {
   courseId: "handbook",
   courses: { handbook: [], beginner: [] },
@@ -168,7 +186,15 @@ const app = {
   authMode: "login",
   worker: null,
   runTimeout: null,
-  requestId: 0
+  requestId: 0,
+  streak: 1,
+  xp: 0,
+  badges: [],
+  audioState: { isPlaying: false, rate: 1.0, utterance: null },
+  flashcardIndex: 0,
+  flashcardFilter: "all",
+  masteredCards: [],
+  sandboxRequestId: 0
 };
 
 function guestProgress(courseId = app.courseId) {
