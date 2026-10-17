@@ -191,7 +191,7 @@ const app = {
   streak: 1,
   xp: 0,
   badges: [],
-  audioState: { isPlaying: false, rate: 1.0, utterance: null },
+  audioState: { isPlaying: false, rate: 1.0, utterance: null, sentences: [], sentenceIndex: 0 },
   flashcardIndex: 0,
   flashcardFilter: "all",
   masteredCards: [],
@@ -356,12 +356,195 @@ function renderBadges() {
   }).join("");
 }
 
-// ==================== AUDIO LESSON PLAYER ====================
+// ==================== AUDIO COMPANION (SIRI NATURAL ENGINE) ====================
+const selectedVoiceKey = "neuroverse_preferred_voice";
+
+function getSiriPriority(voice) {
+  const name = (voice.name || "").toLowerCase();
+  const lang = (voice.lang || "").toLowerCase();
+
+  // If not English, deprioritize
+  if (!lang.startsWith("en")) return -100;
+
+  // Novelty / robotic legacy synthesizers to eliminate completely
+  const avoid = [
+    "bad news", "bahh", "bells", "boing", "bubbles", "cellos",
+    "deranged", "fred", "good news", "hysterical", "junior",
+    "organ", "trinoids", "whisper", "zarvox", "albert", "wobble",
+    "ralph", "jester"
+  ];
+  if (avoid.some((bad) => name.includes(bad))) return -50;
+
+  // 1. Direct Apple Siri voice profiles
+  if (name.includes("siri")) return 100;
+
+  // 2. Samantha (the classic & beloved Apple Siri voice on macOS)
+  if (name.includes("samantha")) {
+    return name.includes("enhanced") || name.includes("premium") ? 99 : 96;
+  }
+
+  // 3. Apple Enhanced / Premium English voices (Ava, Karen, Daniel, Allison)
+  if (name.includes("enhanced") || name.includes("premium")) return 94;
+
+  // 4. Microsoft Natural Online / Google Natural voices
+  if (name.includes("natural") || name.includes("neural") || name.includes("online")) return 92;
+
+  // 5. High-fidelity conversational voices
+  if (name.includes("ava") || name.includes("karen") || name.includes("allison") ||
+      name.includes("daniel") || name.includes("serena") || name.includes("victoria") ||
+      name.includes("kate") || name.includes("oliver") || name.includes("zoe")) {
+    return 88;
+  }
+
+  // 6. Google US / UK English
+  if (name.includes("google") && lang.startsWith("en")) return 82;
+
+  // 7. General English standard voice
+  return voice.default ? 50 : 40;
+}
+
+function getAvailableVoices() {
+  if (!("speechSynthesis" in window)) return [];
+  const voices = window.speechSynthesis.getVoices() || [];
+  return voices
+    .filter((v) => getSiriPriority(v) > 0)
+    .sort((a, b) => getSiriPriority(b) - getSiriPriority(a));
+}
+
+function getBestSiriVoice() {
+  const voices = getAvailableVoices();
+  if (!voices.length) return null;
+  const saved = localStorage.getItem(selectedVoiceKey);
+  if (saved) {
+    const match = voices.find((v) => v.name === saved);
+    if (match) return match;
+  }
+  return voices[0];
+}
+
+function updateAudioVoiceSelect() {
+  const select = document.getElementById("audio-voice-select");
+  if (!select) return;
+  const voices = getAvailableVoices();
+  if (!voices.length) {
+    select.innerHTML = '<option value="">Siri / Natural Voice</option>';
+    return;
+  }
+
+  const current = getBestSiriVoice();
+  select.innerHTML = voices.slice(0, 12).map((v) => {
+    let label = v.name;
+    const lower = v.name.toLowerCase();
+    if (lower.includes("siri")) label = `Siri (${v.name.replace(/siri/i, "").trim() || "Natural"})`;
+    else if (lower.includes("samantha")) label = "Siri · Samantha (Smooth)";
+    else if (lower.includes("karen")) label = "Siri · Karen (Natural AU)";
+    else if (lower.includes("daniel")) label = "Siri · Daniel (Natural UK)";
+    else if (lower.includes("ava")) label = "Ava (Natural Smooth)";
+    else if (lower.includes("natural") || lower.includes("enhanced")) {
+      label = `${v.name.replace(/\(.*?\)/g, "").trim()} (Natural)`;
+    }
+    const isSelected = current && current.name === v.name;
+    return `<option value="${escapeHtml(v.name)}"${isSelected ? " selected" : ""}>${escapeHtml(label)}</option>`;
+  }).join("");
+
+  select.onchange = () => {
+    localStorage.setItem(selectedVoiceKey, select.value);
+    showToast(`Voice switched to: ${select.options[select.selectedIndex].text}`);
+    if (app.audioState.isPlaying) {
+      stopAudio();
+      togglePlayAudio(app.parts[app.currentPart]);
+    }
+  };
+}
+
+if ("speechSynthesis" in window) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    updateAudioVoiceSelect();
+  };
+}
+
+function sanitizeForSpeech(text) {
+  if (!text) return "";
+  let clean = String(text);
+
+  clean = clean
+    .replace(/\$\$(.*?)\$\$/gs, (_, math) => ` Equation: ${math} `)
+    .replace(/\$(.*?)\$/g, (_, math) => {
+      let m = math
+        .replace(/\\mathbf\{([a-zA-Z0-9]+)\}/g, "$1")
+        .replace(/\\vec\{([a-zA-Z0-9]+)\}/g, "vector $1")
+        .replace(/\\sigma/g, "sigma")
+        .replace(/\\mu/g, "mu")
+        .replace(/\\alpha/g, "alpha")
+        .replace(/\\beta/g, "beta")
+        .replace(/\\lambda/g, "lambda")
+        .replace(/\\theta/g, "theta")
+        .replace(/\\sum_\{([^\}]+)\}\^\{([^\}]+)\}/g, "sum from $1 to $2")
+        .replace(/\\sum/g, "sum")
+        .replace(/\\prod/g, "product")
+        .replace(/\\cdot/g, " times ")
+        .replace(/\\times/g, " times ")
+        .replace(/\\le|\\leq/g, " less than or equal to ")
+        .replace(/\\ge|\\geq/g, " greater than or equal to ")
+        .replace(/\\neq/g, " not equal to ")
+        .replace(/\\approx/g, " approximately ")
+        .replace(/\\frac\{([^\}]+)\}\{([^\}]+)\}/g, "$1 over $2")
+        .replace(/_\{([^\}]+)\}/g, " sub $1")
+        .replace(/\^\{([^\}]+)\}/g, " to the power of $1")
+        .replace(/\^2/g, " squared")
+        .replace(/\^3/g, " cubed")
+        .replace(/\\/g, " ");
+      return ` ${m} `;
+    });
+
+  clean = clean
+    .replace(/```[\s\S]*?```/g, " Code example omitted for audio guide. ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[\d+\]/g, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/#+/g, "")
+    .replace(/-->|->|=>/g, " leads to ")
+    .replace(/!=/g, " does not equal ")
+    .replace(/==/g, " equals ");
+
+  clean = clean
+    .replace(/\be\.g\.,?/gi, "for example,")
+    .replace(/\bi\.e\.,?/gi, "that is,")
+    .replace(/\betc\./gi, "et cetera.")
+    .replace(/\bvs\.?/gi, "versus")
+    .replace(/\bAI\b/g, "A.I.")
+    .replace(/\bML\b/g, "M.L.")
+    .replace(/\bPyDSML\b/g, "Python Data Science and Machine Learning")
+    .replace(/\bDIU CPC\b/g, "D.I.U. Computer Programming Club")
+    .replace(/\bAPI\b/g, "A.P.I.")
+    .replace(/\bSQL\b/g, "sequel")
+    .replace(/\bPCA\b/g, "P.C.A.")
+    .replace(/\bSVM\b/g, "S.V.M.")
+    .replace(/\bLLM\b/g, "L.L.M.")
+    .replace(/\bLLMs\b/g, "L.L.Ms")
+    .replace(/\bAUC\b/g, "A.U.C.")
+    .replace(/\bROC\b/g, "R.O.C.")
+    .replace(/\bMSE\b/g, "M.S.E.")
+    .replace(/\bRMSE\b/g, "Root Mean Squared Error")
+    .replace(/\bNLP\b/g, "Natural Language Processing");
+
+  return clean.replace(/\s+/g, " ").trim();
+}
+
+function splitIntoSentences(text) {
+  const matches = text.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g);
+  if (!matches) return [text];
+  return matches.map((s) => s.trim()).filter((s) => s.length > 0);
+}
+
 function stopAudio() {
   if ("speechSynthesis" in window) {
     window.speechSynthesis.cancel();
   }
   app.audioState.isPlaying = false;
+  app.audioState.sentences = [];
+  app.audioState.sentenceIndex = 0;
   updateAudioUi();
 }
 
@@ -383,7 +566,52 @@ function updateAudioUi() {
   const status = document.getElementById("audio-status-text");
   if (playBtn) playBtn.textContent = app.audioState.isPlaying ? "❚❚ Pause" : "▶ Play";
   if (wave) wave.classList.toggle("is-playing", app.audioState.isPlaying);
-  if (status) status.textContent = app.audioState.isPlaying ? "Narrating lesson in natural speech..." : "Natural speech audio guide · Listen hands-free";
+  if (status) {
+    if (app.audioState.isPlaying && app.audioState.sentences?.length) {
+      status.textContent = `Narrating sentence ${app.audioState.sentenceIndex + 1} of ${app.audioState.sentences.length} with Siri voice...`;
+    } else {
+      status.textContent = "Siri Natural Speech · Smooth conversational audio guide";
+    }
+  }
+}
+
+function playNextSentence(voice) {
+  if (!app.audioState.isPlaying) return;
+  if (!app.audioState.sentences || app.audioState.sentenceIndex >= app.audioState.sentences.length) {
+    app.audioState.isPlaying = false;
+    updateAudioUi();
+    addXP(25, "Finished audio guide");
+    showToast("Completed audio companion narration!");
+    return;
+  }
+
+  const text = app.audioState.sentences[app.audioState.sentenceIndex];
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  if (voice) utterance.voice = voice;
+  // Siri-like smooth cadence and warm pitch
+  utterance.rate = app.audioState.rate * 0.98;
+  utterance.pitch = 1.04;
+  utterance.volume = 1.0;
+
+  utterance.onend = () => {
+    if (!app.audioState.isPlaying) return;
+    app.audioState.sentenceIndex++;
+    updateAudioUi();
+    // 60ms natural breathing pause between sentences
+    setTimeout(() => {
+      playNextSentence(voice);
+    }, 60);
+  };
+
+  utterance.onerror = (e) => {
+    if (e.error === "canceled" || e.error === "interrupted") return;
+    app.audioState.sentenceIndex++;
+    playNextSentence(voice);
+  };
+
+  app.audioState.utterance = utterance;
+  window.speechSynthesis.speak(utterance);
 }
 
 function togglePlayAudio(part) {
@@ -395,32 +623,28 @@ function togglePlayAudio(part) {
     stopAudio();
     return;
   }
-  window.speechSynthesis.cancel();
-  const textParts = [
-    `Lesson: ${part.chapter}.`,
-    `Objective: ${part.objective}.`,
+  stopAudio();
+
+  const voice = getBestSiriVoice();
+  const rawParts = [
+    `Lesson ${part.part}: ${part.chapter}.`,
+    `Learning Objective: ${part.objective}.`,
     part.summary,
     ...part.sections.map((s) => `${s.title}. ${s.paragraphs.join(" ")}`)
   ];
-  const fullText = textParts.join(" ");
-  const utterance = new SpeechSynthesisUtterance(fullText);
-  utterance.rate = app.audioState.rate;
-  utterance.onstart = () => {
-    app.audioState.isPlaying = true;
-    updateAudioUi();
-    unlockBadge("audio_listener");
-  };
-  utterance.onend = () => {
-    app.audioState.isPlaying = false;
-    updateAudioUi();
-    addXP(25, "Finished audio guide");
-  };
-  utterance.onerror = () => {
-    app.audioState.isPlaying = false;
-    updateAudioUi();
-  };
-  app.audioState.utterance = utterance;
-  window.speechSynthesis.speak(utterance);
+
+  const fullCleanText = sanitizeForSpeech(rawParts.join(" "));
+  const sentences = splitIntoSentences(fullCleanText);
+
+  if (!sentences.length) return;
+
+  app.audioState.sentences = sentences;
+  app.audioState.sentenceIndex = 0;
+  app.audioState.isPlaying = true;
+  updateAudioUi();
+  unlockBadge("audio_listener");
+
+  playNextSentence(voice);
 }
 
 // ==================== LESSON NOTES ====================
@@ -629,15 +853,10 @@ async function applyOnboardingMatch() {
   const { matchedCourse, matchedTrack } = onboardingState;
   document.getElementById("onboarding-dialog").close();
   if (matchedCourse) {
-    app.courseId = matchedCourse;
-    app.track = matchedTrack || "practitioner";
-    try {
-      localStorage.setItem(selectedCourseKey, app.courseId);
-    } catch {}
-    app.parts = app.courses[app.courseId];
-    renderNav();
+    await changeCourse(matchedCourse);
+    if (matchedTrack) await changeTrack(matchedTrack);
     openPart(0);
-    showToast(`Enrolled in ${matchedCourse === "beginner" ? "Python → ML" : "AI Researcher"}!`);
+    showToast(`Enrolled in ${matchedCourse === "beginner" ? "Python → ML" : matchedCourse === "pydsml" ? "DIU CPC PyDSML" : "AI Researcher"}!`);
   }
 }
 
@@ -1822,15 +2041,16 @@ function lessonMarkup(part, index) {
       <div class="lesson-audio-bar">
         <div class="audio-controls-row">
           <button class="audio-play-btn" id="audio-play-btn" type="button">▶ Play</button>
-          <button class="audio-speed-btn" id="audio-speed-btn" type="button">1x</button>
+          <button class="audio-speed-btn" id="audio-speed-btn" type="button">${app.audioState.rate}x</button>
+          <select class="audio-voice-select" id="audio-voice-select" title="Narrator Voice" aria-label="Select Voice"></select>
           <div class="audio-wave" id="audio-wave" aria-hidden="true">
             <span></span><span></span><span></span><span></span><span></span>
           </div>
           <button class="audio-stop-btn" id="audio-stop-btn" type="button">■ Stop</button>
         </div>
         <div class="audio-info">
-          <strong>AUDIO COMPANION</strong>
-          <small id="audio-status-text">Natural speech audio guide · Listen hands-free</small>
+          <strong>SIRI AUDIO COMPANION</strong>
+          <small id="audio-status-text">Siri Natural Speech · Smooth conversational audio guide</small>
         </div>
       </div>
       <div class="teacher-note"><strong>LEARNING OBJECTIVE</strong>${escapeHtml(part.objective)}</div>
@@ -2169,7 +2389,20 @@ function exportResearchPlan() {
   showToast("Research plan downloaded.");
 }
 
+function openMobileSidebar() {
+  document.getElementById("sidebar")?.classList.add("is-open");
+  document.getElementById("sidebar-backdrop")?.classList.add("is-visible");
+  document.body.style.overflow = "hidden";
+}
+
+function closeMobileSidebar() {
+  document.getElementById("sidebar")?.classList.remove("is-open");
+  document.getElementById("sidebar-backdrop")?.classList.remove("is-visible");
+  document.body.style.overflow = "";
+}
+
 function openPart(index) {
+  closeMobileSidebar();
   if (!Number.isInteger(index) || index < 0 || index >= app.parts.length) return;
   stopAudio();
   cancelExecution();
@@ -2191,6 +2424,7 @@ function openPart(index) {
   if (audioPlayBtn) audioPlayBtn.addEventListener("click", () => togglePlayAudio(part));
   if (audioSpeedBtn) audioSpeedBtn.addEventListener("click", toggleAudioSpeed);
   if (audioStopBtn) audioStopBtn.addEventListener("click", stopAudio);
+  updateAudioVoiceSelect();
 
   // AI Mentor listeners
   document.querySelectorAll(".mentor-preset-btn").forEach((btn) => {
@@ -2233,6 +2467,7 @@ function openPart(index) {
 }
 
 function showDashboard() {
+  closeMobileSidebar();
   stopAudio();
   cancelExecution();
   app.currentPart = null;
@@ -2432,6 +2667,7 @@ async function saveProgress() {
 }
 
 async function changeTrack(track) {
+  closeMobileSidebar();
   app.track = track;
   renderNav();
   renderDashboard();
@@ -2680,6 +2916,10 @@ document.addEventListener("click", (event) => {
   }
 });
 
+document.getElementById("mobile-nav-toggle")?.addEventListener("click", openMobileSidebar);
+document.getElementById("sidebar-close-btn")?.addEventListener("click", closeMobileSidebar);
+document.getElementById("sidebar-backdrop")?.addEventListener("click", closeMobileSidebar);
+
 document.getElementById("back-button").addEventListener("click", showDashboard);
 document.getElementById("continue-button").addEventListener("click", (event) => openPart(Number(event.currentTarget.dataset.openModule)));
 document.getElementById("auth-open").addEventListener("click", (event) => {
@@ -2704,6 +2944,7 @@ document.getElementById("about-done").addEventListener("click", () => document.g
 
 // Study Library
 document.getElementById("library-open").addEventListener("click", () => {
+  closeMobileSidebar();
   app.libraryTab = "glossary";
   app.librarySearch = "";
   document.getElementById("library-search").value = "";
@@ -2750,10 +2991,18 @@ if (onboardClose) onboardClose.addEventListener("click", () => onboardDialog.clo
 if (onboardDialog) {
   onboardDialog.addEventListener("click", (e) => {
     const choice = e.target.closest(".choice-card");
-    if (choice) handleOnboardingChoice(e);
+    if (choice) {
+      const field = choice.dataset.field;
+      const value = choice.dataset.value;
+      if (field && value) {
+        handleOnboardingChoice(field, value);
+      }
+    }
   });
 }
 if (onboardApplyBtn) onboardApplyBtn.addEventListener("click", applyOnboardingMatch);
+const onboardRestartBtn = document.getElementById("onboarding-restart-btn");
+if (onboardRestartBtn) onboardRestartBtn.addEventListener("click", openOnboardingDialog);
 
 // Python Sandbox Modal
 const sandboxOpenBtn = document.getElementById("sandbox-open");
