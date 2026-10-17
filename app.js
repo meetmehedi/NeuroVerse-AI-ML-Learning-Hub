@@ -151,6 +151,7 @@ const storageKey = "ai-researcher-academy-guest-v1";
 const themeStorageKey = "neuroverse-academy-theme-v1";
 const researchStudioKey = "neuroverse-research-studio-v1";
 const beginnerProgressKey = "neuroverse-python-ml-progress-v1";
+const pydsmlProgressKey = "neuroverse-pydsml-progress-v1";
 const selectedCourseKey = "neuroverse-selected-course-v1";
 const streakKey = "neuroverse-streak-v1";
 const xpKey = "neuroverse-xp-v1";
@@ -160,19 +161,19 @@ const masteredCardsKey = "neuroverse-mastered-cards-v1";
 const certRecipientKey = "neuroverse-cert-recipient-v1";
 
 const badgesList = [
-  { id: "first_lesson", name: "First Spark", icon: "🌱", desc: "Started your first lesson" },
-  { id: "python_runner", name: "Code Pioneer", icon: "💻", desc: "Ran Python in the browser" },
-  { id: "quiz_master", name: "Quiz Ace", icon: "🎯", desc: "Passed a knowledge check" },
-  { id: "audio_listener", name: "Attentive Ear", icon: "🎧", desc: "Listened to an audio lesson" },
-  { id: "mentor_asker", name: "Inquisitive", icon: "🤖", desc: "Consulted the AI Mentor" },
-  { id: "notes_taker", name: "Scholar", icon: "📝", desc: "Saved personal study notes" },
-  { id: "flashcard_pro", name: "Memory Master", icon: "🎴", desc: "Reviewed flashcards" },
-  { id: "handbook_grad", name: "Certified Graduate", icon: "🎓", desc: "Completed the full curriculum" }
+  { id: "first_lesson", name: "First Spark", icon: "01", desc: "Started your first lesson" },
+  { id: "python_runner", name: "Code Pioneer", icon: "02", desc: "Ran Python in the browser" },
+  { id: "quiz_master", name: "Quiz Ace", icon: "03", desc: "Passed a knowledge check" },
+  { id: "audio_listener", name: "Attentive Ear", icon: "04", desc: "Listened to an audio lesson" },
+  { id: "mentor_asker", name: "Inquisitive", icon: "05", desc: "Consulted the AI Mentor" },
+  { id: "notes_taker", name: "Scholar", icon: "06", desc: "Saved personal study notes" },
+  { id: "flashcard_pro", name: "Memory Master", icon: "07", desc: "Reviewed flashcards" },
+  { id: "handbook_grad", name: "Certified Graduate", icon: "08", desc: "Completed the full curriculum" }
 ];
 
 const app = {
   courseId: "handbook",
-  courses: { handbook: [], beginner: [] },
+  courses: { handbook: [], beginner: [], pydsml: [] },
   parts: [],
   library: null,
   track: "practitioner",
@@ -199,7 +200,7 @@ const app = {
 
 function guestProgress(courseId = app.courseId) {
   try {
-    const key = courseId === "beginner" ? beginnerProgressKey : storageKey;
+    const key = courseId === "beginner" ? beginnerProgressKey : courseId === "pydsml" ? pydsmlProgressKey : storageKey;
     const saved = JSON.parse(localStorage.getItem(key) || "{}");
     return {
       track: pathways[saved.track] ? saved.track : "practitioner",
@@ -233,7 +234,11 @@ async function request(url, options = {}) {
   } catch {
     throw new Error(`The server returned an invalid response (${response.status}).`);
   }
-  if (!response.ok) throw new Error(payload.error || `Request failed (${response.status}).`);
+  if (!response.ok) {
+    const err = new Error(payload.error || `Request failed (${response.status}).`);
+    err.status = response.status;
+    throw err;
+  }
   return payload;
 }
 
@@ -241,15 +246,22 @@ function activePathway() {
   if (app.courseId === "beginner") {
     return { label: "PYTHON → ML · 14 WEEKS", parts: app.parts.map((part) => part.part) };
   }
+  if (app.courseId === "pydsml") {
+    return { label: "DIU CPC PyDSML · 5 MODULES", parts: app.parts.map((part) => part.part) };
+  }
   return pathways[app.track];
 }
 
 function unitWord() {
-  return app.courseId === "beginner" ? "Week" : "Part";
+  if (app.courseId === "beginner") return "Week";
+  if (app.courseId === "pydsml") return "Module";
+  return "Part";
 }
 
 function unitWordPlural() {
-  return app.courseId === "beginner" ? "weeks" : "parts";
+  if (app.courseId === "beginner") return "weeks";
+  if (app.courseId === "pydsml") return "modules";
+  return "parts";
 }
 
 function findPart(partNumber) {
@@ -316,7 +328,7 @@ function unlockBadge(badgeId) {
   }
   const badge = badgesList.find((b) => b.id === badgeId);
   if (badge) {
-    showToast(`🏆 Badge Unlocked: ${badge.name}!`);
+    showToast(`Badge Unlocked: ${badge.name}!`);
     addXP(100, `Unlocked ${badge.name}`);
   }
   renderBadges();
@@ -947,7 +959,7 @@ function renderFlashcards() {
             <div class="card-main-content">
               <h3>${card.backTitle}</h3>
               <div class="card-back-explanation">${card.backText}</div>
-              ${card.backIntuition ? `<p style="margin-top:10px;font-size:12px;color:#205e40;"><strong>💡 Intuition:</strong> ${card.backIntuition}</p>` : ""}
+              ${card.backIntuition ? `<p style="margin-top:10px;font-size:12px;color:#205e40;"><strong>Intuition:</strong> ${card.backIntuition}</p>` : ""}
             </div>
           </div>
           <span class="card-flip-prompt">Click to flip back ↺</span>
@@ -960,7 +972,7 @@ function renderFlashcards() {
       <button class="button button-light" id="card-flip-btn" type="button">Flip Card ⟳</button>
       <button class="button button-dark" id="card-next-btn" type="button">Next →</button>
       <button class="button button-light" id="card-master-btn" type="button">${isMastered ? "✓ Mastered" : "Mark Mastered"}</button>
-      <button class="button button-light" id="card-shuffle-btn" type="button">Shuffle 🔀</button>
+      <button class="button button-light" id="card-shuffle-btn" type="button">Shuffle Cards</button>
     </div>
   </div>`;
 }
@@ -1065,6 +1077,243 @@ test_score = pipeline.score(X_test, y_test)</code></pre>
   </div>`;
 }
 
+// ==================== GRADE CALCULATOR (DIU CPC PyDSML Track) ====================
+let gradeCalcState = {
+  a1: 9, a2: 8, a3: 10, a4: 9,
+  cp1: 9, cp2: 8,
+  capstone: 27,
+  attendance: 10
+};
+
+function calculateGrade() {
+  const assignTotal = gradeCalcState.a1 + gradeCalcState.a2 + gradeCalcState.a3 + gradeCalcState.a4;
+  const checkpointTotal = gradeCalcState.cp1 + gradeCalcState.cp2;
+  const capstoneTotal = gradeCalcState.capstone;
+  const labTotal = gradeCalcState.attendance;
+  const total = assignTotal + checkpointTotal + capstoneTotal + labTotal;
+
+  let letter = "F";
+  let gpa = "0.00";
+  let status = "Needs improvement to qualify for certification.";
+  let isWarning = true;
+
+  if (total >= 80) { letter = "A+"; gpa = "4.00"; status = "Outstanding performance! Certificate with Distinction."; isWarning = false; }
+  else if (total >= 75) { letter = "A"; gpa = "3.75"; status = "Excellent mastery. Verified Certificate eligible."; isWarning = false; }
+  else if (total >= 70) { letter = "A-"; gpa = "3.50"; status = "Very good progress. Verified Certificate eligible."; isWarning = false; }
+  else if (total >= 65) { letter = "B+"; gpa = "3.25"; status = "Good standing. Verified Certificate eligible."; isWarning = false; }
+  else if (total >= 60) { letter = "B"; gpa = "3.00"; status = "Satisfactory completion. Certificate eligible."; isWarning = false; }
+  else if (total >= 55) { letter = "B-"; gpa = "2.75"; status = "Passing standing."; isWarning = false; }
+  else if (total >= 50) { letter = "C+"; gpa = "2.50"; status = "Passing. Capstone defense required."; isWarning = false; }
+  else if (total >= 45) { letter = "C"; gpa = "2.25"; status = "Conditional pass."; isWarning = true; }
+  else if (total >= 40) { letter = "D"; gpa = "2.00"; status = "Minimum passing grade."; isWarning = true; }
+
+  return { total, assignTotal, checkpointTotal, capstoneTotal, labTotal, letter, gpa, status, isWarning };
+}
+
+function renderGradeCalculator() {
+  document.getElementById("library-count").textContent = "DIU CPC 40 / 20 / 30 / 10 FORMULA";
+  const { total, assignTotal, checkpointTotal, capstoneTotal, labTotal, letter, gpa, status, isWarning } = calculateGrade();
+
+  return `<div class="gradecalc-container">
+    <div style="background:var(--sand);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--ink);">
+      <strong>DIU Computer Programming Club · PyDSML Grading Matrix:</strong> 
+      4 Assignments (40%) + 2 Mid-Track Checkpoints (20%) + Final Capstone Project & Defense (30%) + Lab Attendance & Participation (10%).
+    </div>
+
+    <div class="gradecalc-grid">
+      <div class="gradecalc-inputs">
+        <div class="grade-component-card">
+          <div class="grade-comp-head">
+            <strong>1. Assignments (4 Total)</strong>
+            <span class="grade-comp-weight">40% Total (10 pts each)</span>
+          </div>
+          ${[1, 2, 3, 4].map((num) => `
+            <div class="grade-slider-row">
+              <label for="grade-a${num}">Assignment ${num}:</label>
+              <input type="range" id="grade-a${num}" data-grade-key="a${num}" min="0" max="10" step="0.5" value="${gradeCalcState[`a${num}`]}">
+              <span class="grade-val" id="val-a${num}">${gradeCalcState[`a${num}`]} / 10</span>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="grade-component-card">
+          <div class="grade-comp-head">
+            <strong>2. Mid-Track Checkpoints (2 Total)</strong>
+            <span class="grade-comp-weight">20% Total (10 pts each)</span>
+          </div>
+          ${[1, 2].map((num) => `
+            <div class="grade-slider-row">
+              <label for="grade-cp${num}">Checkpoint ${num}:</label>
+              <input type="range" id="grade-cp${num}" data-grade-key="cp${num}" min="0" max="10" step="0.5" value="${gradeCalcState[`cp${num}`]}">
+              <span class="grade-val" id="val-cp${num}">${gradeCalcState[`cp${num}`]} / 10</span>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="grade-component-card">
+          <div class="grade-comp-head">
+            <strong>3. Capstone Project & Repository</strong>
+            <span class="grade-comp-weight">30% Total</span>
+          </div>
+          <div class="grade-slider-row">
+            <label for="grade-capstone">Project & Defense:</label>
+            <input type="range" id="grade-capstone" data-grade-key="capstone" min="0" max="30" step="1" value="${gradeCalcState.capstone}">
+            <span class="grade-val" id="val-capstone">${gradeCalcState.capstone} / 30</span>
+          </div>
+        </div>
+
+        <div class="grade-component-card">
+          <div class="grade-comp-head">
+            <strong>4. Lab Attendance & Problem Solving</strong>
+            <span class="grade-comp-weight">10% Total</span>
+          </div>
+          <div class="grade-slider-row">
+            <label for="grade-attendance">Weekly Labs:</label>
+            <input type="range" id="grade-attendance" data-grade-key="attendance" min="0" max="10" step="0.5" value="${gradeCalcState.attendance}">
+            <span class="grade-val" id="val-attendance">${gradeCalcState.attendance} / 10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gradecalc-result-card">
+        <span class="manifesto-tag">LIVE ASSESSMENT</span>
+        <div class="result-big-score" id="res-total">${total.toFixed(1)}%</div>
+        <div class="result-letter-grade" id="res-letter">${letter}</div>
+        <div class="result-gpa-badge" id="res-gpa">Grade Point: <strong>${gpa} / 4.00</strong></div>
+        <div class="result-status-pill${isWarning ? " is-warning" : ""}" id="res-status">${status}</div>
+        
+        <div class="result-breakdown-list">
+          <div class="breakdown-row"><span>Assignments (40%):</span><strong id="res-assign">${assignTotal.toFixed(1)} / 40</strong></div>
+          <div class="breakdown-row"><span>Checkpoints (20%):</span><strong id="res-checkpoint">${checkpointTotal.toFixed(1)} / 20</strong></div>
+          <div class="breakdown-row"><span>Capstone (30%):</span><strong id="res-capstone">${capstoneTotal.toFixed(1)} / 30</strong></div>
+          <div class="breakdown-row"><span>Lab & Attendance (10%):</span><strong id="res-lab">${labTotal.toFixed(1)} / 10</strong></div>
+        </div>
+
+        <button class="button button-dark" type="button" id="grade-claim-cert" style="margin-top:20px;width:100%;" ${total >= 60 ? "" : "disabled"}>
+          ${total >= 60 ? "Preview Verified Certificate ↗" : "Score 60%+ to Unlock Certificate"}
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ==================== TOOLS CHECKLIST ====================
+const checklistKey = "neuroverse_tools_checklist";
+const toolsCatalog = [
+  {
+    category: "Python & Local Environment",
+    tools: [
+      { id: "python_installed", name: "Python 3.10+ Installed", desc: "Standard 64-bit CPython runtime installed and accessible in shell via python3 --version." },
+      { id: "ide_ready", name: "Code Editor (VS Code / Cursor / PyCharm)", desc: "Configured with Python and Pylance extensions for linting and type hinting." },
+      { id: "venv_ready", name: "Virtual Environment (venv or conda)", desc: "Isolated virtual environment created: python3 -m venv .venv && source .venv/bin/activate." }
+    ]
+  },
+  {
+    category: "Data Science & ML Core",
+    tools: [
+      { id: "numpy_pd", name: "NumPy & Pandas", desc: "Vectorized linear algebra and tabular DataFrame data manipulation libraries." },
+      { id: "viz_libs", name: "Matplotlib & Seaborn", desc: "Scientific publication-quality charts, confusion matrices, and distribution plots." },
+      { id: "sklearn_installed", name: "Scikit-Learn", desc: "Classic ML algorithms, preprocessing pipelines, cross-validation, and metrics." }
+    ]
+  },
+  {
+    category: "Deep Learning, PyTorch & LLMs",
+    tools: [
+      { id: "pytorch_installed", name: "PyTorch & Torchvision", desc: "Modern autograd tensor framework with GPU/MPS accelerator backend support." },
+      { id: "hf_installed", name: "Hugging Face Transformers & Datasets", desc: "Pretrained weights, tokenizers, and open-source foundation model access." },
+      { id: "jupyter_installed", name: "JupyterLab / Notebooks", desc: "Interactive experimentation and exploratory data analysis sandbox." }
+    ]
+  },
+  {
+    category: "Research, Git & Publishing",
+    tools: [
+      { id: "git_installed", name: "Git & GitHub CLI", desc: "Version control for reproducible experiments, branches, and public code releases." },
+      { id: "latex_ready", name: "LaTeX / Overleaf Account", desc: "Standard mathematical typesetting for academic AI research papers (arXiv / NeurIPS / ICML)." },
+      { id: "papers_ready", name: "Papers With Code & arXiv Reader", desc: "Tracking state-of-the-art benchmarks and reproducing breakthrough publications." }
+    ]
+  }
+];
+
+function getCheckedTools() {
+  try {
+    return JSON.parse(localStorage.getItem(checklistKey) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function toggleToolCheck(toolId) {
+  let checked = getCheckedTools();
+  if (checked.includes(toolId)) {
+    checked = checked.filter((id) => id !== toolId);
+  } else {
+    checked.push(toolId);
+    addXP(10, "Environment tool verified");
+  }
+  try {
+    localStorage.setItem(checklistKey, JSON.stringify(checked));
+  } catch (e) {
+    console.error("Could not save checklist.", e);
+  }
+  const totalTools = toolsCatalog.reduce((sum, cat) => sum + cat.tools.length, 0);
+  if (checked.length === totalTools) {
+    unlockBadge("tools_ready");
+  }
+  renderLibrary();
+}
+
+function renderToolsChecklist() {
+  const checked = getCheckedTools();
+  const allTools = toolsCatalog.flatMap((c) => c.tools);
+  const total = allTools.length;
+  const count = checked.length;
+  const percent = Math.round((count / total) * 100);
+
+  document.getElementById("library-count").textContent = `${count} / ${total} TOOLS VERIFIED (${percent}%)`;
+
+  return `<div class="checklist-container">
+    <div class="checklist-progress-bar-wrap">
+      <div class="checklist-progress-head">
+        <strong>ML Researcher Environment Readiness</strong>
+        <span>${count} of ${total} verified (${percent}%)</span>
+      </div>
+      <div class="checklist-track">
+        <div class="checklist-fill" style="width: ${percent}%;"></div>
+      </div>
+    </div>
+
+    <div class="checklist-pip-box">
+      <div>
+        <span style="font-size:11px;color:#9ebca4;display:block;margin-bottom:4px;">ONE-LINE PIP INSTALL COMMAND</span>
+        <code>pip install numpy pandas matplotlib seaborn scikit-learn torch torchvision transformers datasets jupyterlab</code>
+      </div>
+      <button class="button button-light copy-snippet-btn" style="position:static;" type="button" data-copy="pip-command">Copy Command</button>
+      <pre style="display:none;"><code id="snippet-pip-command">pip install numpy pandas matplotlib seaborn scikit-learn torch torchvision transformers datasets jupyterlab</code></pre>
+    </div>
+
+    ${toolsCatalog.map((cat) => `
+      <section class="checklist-group">
+        <h3>${cat.category}</h3>
+        <div class="checklist-items">
+          ${cat.tools.map((tool) => {
+            const isDone = checked.includes(tool.id);
+            return `
+              <label class="check-item">
+                <input type="checkbox" data-tool-id="${tool.id}" ${isDone ? "checked" : ""}>
+                <div class="check-item-text">
+                  <strong>${escapeHtml(tool.name)}</strong>
+                  <small>${escapeHtml(tool.desc)}</small>
+                </div>
+              </label>
+            `;
+          }).join("")}
+        </div>
+      </section>
+    `).join("")}
+  </div>`;
+}
+
+
 function renderNav() {
   const nav = document.getElementById("chapter-nav");
   nav.setAttribute("aria-label", `${unitWord()} navigation`);
@@ -1080,9 +1329,9 @@ function renderNav() {
     </button>`;
   }).join("");
   document.getElementById("sidebar-count").textContent = `${app.completed.length} / ${app.parts.length}`;
-  document.getElementById("course-curriculum-label").textContent = app.courseId === "beginner" ? "14-WEEK CURRICULUM" : "HANDBOOK CURRICULUM";
-  document.getElementById("course-pathway-label").textContent = app.courseId === "beginner" ? "YOUR COURSE" : "YOUR LEARNING PATH";
-  document.getElementById("track-switch").hidden = app.courseId === "beginner";
+  document.getElementById("course-curriculum-label").textContent = app.courseId === "beginner" ? "14-WEEK CURRICULUM" : app.courseId === "pydsml" ? "DIU CPC TRACK" : "HANDBOOK CURRICULUM";
+  document.getElementById("course-pathway-label").textContent = app.courseId === "handbook" ? "YOUR LEARNING PATH" : "YOUR COURSE";
+  document.getElementById("track-switch").hidden = app.courseId !== "handbook";
   document.querySelectorAll(".course-option").forEach((button) => {
     const selected = button.dataset.course === app.courseId;
     button.classList.toggle("is-active", selected);
@@ -1570,6 +1819,20 @@ function lessonMarkup(part, index) {
   </header>
   <div class="lesson-layout">
     <div class="lesson-main">
+      <div class="lesson-audio-bar">
+        <div class="audio-controls-row">
+          <button class="audio-play-btn" id="audio-play-btn" type="button">▶ Play</button>
+          <button class="audio-speed-btn" id="audio-speed-btn" type="button">1x</button>
+          <div class="audio-wave" id="audio-wave" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <button class="audio-stop-btn" id="audio-stop-btn" type="button">■ Stop</button>
+        </div>
+        <div class="audio-info">
+          <strong>AUDIO COMPANION</strong>
+          <small id="audio-status-text">Natural speech audio guide · Listen hands-free</small>
+        </div>
+      </div>
       <div class="teacher-note"><strong>LEARNING OBJECTIVE</strong>${escapeHtml(part.objective)}</div>
       ${diagram ? `<section class="lesson-visual" aria-label="Lesson diagram">${diagramMarkup(diagram, index)}</section>` : ""}
       ${app.courseId === "handbook" && index === 1 ? modelPlaygroundMarkup() : ""}
@@ -1606,6 +1869,31 @@ function lessonMarkup(part, index) {
         <div class="quiz-options">${quiz.choices.map((choice, choiceIndex) => `<button class="quiz-option" type="button" data-answer="${choiceIndex}"><span class="option-letter">${String.fromCharCode(65 + choiceIndex)}</span>${escapeHtml(choice)}</button>`).join("")}</div>
         <div class="quiz-feedback" id="quiz-feedback" role="status"></div>
       </section>
+      <section class="ai-mentor-panel" id="ai-mentor-widget">
+        <div class="mentor-header">
+          <div class="mentor-title">
+            <span class="mentor-avatar">AI</span>
+            <div>
+              <strong>Interactive AI Research Mentor</strong>
+              <small>Socratic guidance, intuition explanations, and real-world transfer</small>
+            </div>
+          </div>
+        </div>
+        <div class="mentor-prompt-chips">
+          <button class="mentor-preset-btn" type="button" data-prompt="eli5">Explain Simply (ELI5)</button>
+          <button class="mentor-preset-btn" type="button" data-prompt="intuition">Theoretical Intuition</button>
+          <button class="mentor-preset-btn" type="button" data-prompt="practical">Real-World Application</button>
+        </div>
+        <div class="mentor-chat-area" id="mentor-chat-messages">
+          <div class="mentor-msg mentor-bot">
+            Hello researcher! I am your AI Mentor for <em>${escapeHtml(part.chapter)}</em>. Choose a quick question above or ask anything about this concept below!
+          </div>
+        </div>
+        <form class="mentor-input-row" id="mentor-chat-form">
+          <input type="text" id="mentor-chat-input" placeholder="Ask a question about this lesson..." maxlength="200" required>
+          <button class="button button-dark" type="submit">Ask Mentor</button>
+        </form>
+      </section>
       <div class="lesson-bottom-nav">
         <button class="button button-light" type="button" data-step="-1"${index === 0 ? " disabled" : ""}>← Previous lesson</button>
         <button class="button button-dark" type="button" data-step="1"${index === app.parts.length - 1 ? " disabled" : ""}>Next lesson →</button>
@@ -1615,6 +1903,15 @@ function lessonMarkup(part, index) {
       <section class="lesson-side-card">
         <h3>In this part</h3>
         <ul><li>${escapeHtml(part.objective)}</li><li>Read ${part.sections.length} short sections</li><li>Complete the Python exercise</li><li>Pass the knowledge check</li></ul>
+      </section>
+      <section class="lesson-side-card lesson-notes-card">
+        <div class="notes-header">
+          <h3>Study Notes</h3>
+          <span class="notes-status" id="notes-status">Auto-saved</span>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;">Jot down your key research reflections and takeaways for this part.</p>
+        <textarea class="lesson-notes-textarea" id="lesson-notes-input" placeholder="Write key takeaways, equations, or experiment ideas..."></textarea>
+        <button class="text-button" type="button" id="export-notes-btn" style="margin-top:8px;">Export All Notes (.md) ↗</button>
       </section>
       <section class="lesson-side-card">
         <h3>Your checkpoint</h3>
@@ -1704,14 +2001,132 @@ function renderLibrary() {
   const contents = {
     glossary: renderGlossary,
     formulas: renderFormulas,
+    flashcards: renderFlashcards,
+    cheatsheets: renderCheatsheets,
+    gradecalc: renderGradeCalculator,
+    checklist: renderToolsChecklist,
     projects: renderProjects,
     toolkit: renderResearchStudio
   };
-  document.getElementById("library-content").innerHTML = contents[app.libraryTab]();
+  const renderer = contents[app.libraryTab] || renderGlossary;
+  document.getElementById("library-content").innerHTML = renderer();
+
+  // Toolkit events
   const researchPlanForm = document.getElementById("research-plan-form");
   if (app.libraryTab === "toolkit" && researchPlanForm) {
     researchPlanForm.addEventListener("input", saveResearchPlan);
     document.getElementById("export-plan").addEventListener("click", exportResearchPlan);
+  }
+
+  // Flashcards events
+  if (app.libraryTab === "flashcards") {
+    const box = document.getElementById("flashcard-box");
+    const flipBtn = document.getElementById("card-flip-btn");
+    const nextBtn = document.getElementById("card-next-btn");
+    const prevBtn = document.getElementById("card-prev-btn");
+    const masterBtn = document.getElementById("card-master-btn");
+    const shuffleBtn = document.getElementById("card-shuffle-btn");
+
+    const flipCard = () => {
+      const inner = document.getElementById("flashcard-inner");
+      if (inner) inner.classList.toggle("is-flipped");
+    };
+
+    if (box) box.addEventListener("click", flipCard);
+    if (flipBtn) flipBtn.addEventListener("click", flipCard);
+    if (nextBtn) nextBtn.addEventListener("click", () => {
+      app.flashcardIndex += 1;
+      renderLibrary();
+    });
+    if (prevBtn) prevBtn.addEventListener("click", () => {
+      app.flashcardIndex = Math.max(0, app.flashcardIndex - 1);
+      renderLibrary();
+    });
+    if (shuffleBtn) shuffleBtn.addEventListener("click", () => {
+      app.flashcardIndex = Math.floor(Math.random() * flashcardsDeck.length);
+      renderLibrary();
+    });
+    if (masterBtn) masterBtn.addEventListener("click", () => {
+      const filtered = flashcardsDeck.filter((c) => app.flashcardFilter === "all" || c.category === app.flashcardFilter);
+      const card = filtered[app.flashcardIndex] || flashcardsDeck[0];
+      if (app.masteredCards.includes(card.frontTitle)) {
+        app.masteredCards = app.masteredCards.filter((t) => t !== card.frontTitle);
+      } else {
+        app.masteredCards.push(card.frontTitle);
+        addXP(20, "Flashcard Mastered");
+        if (app.masteredCards.length >= 8) unlockBadge("flashcard_whiz");
+      }
+      try {
+        localStorage.setItem(masteredCardsKey, JSON.stringify(app.masteredCards));
+      } catch (e) {
+        console.error("Could not save mastered cards.", e);
+      }
+      renderLibrary();
+    });
+
+    document.querySelectorAll("[data-flash-filter]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        app.flashcardFilter = e.currentTarget.dataset.flashFilter;
+        app.flashcardIndex = 0;
+        renderLibrary();
+      });
+    });
+  }
+
+  // Grade calculator events
+  if (app.libraryTab === "gradecalc") {
+    document.querySelectorAll("[data-grade-key]").forEach((slider) => {
+      slider.addEventListener("input", (e) => {
+        const key = e.target.dataset.gradeKey;
+        const val = parseFloat(e.target.value);
+        gradeCalcState[key] = val;
+        const valEl = document.getElementById(`val-${key}`);
+        const max = key === "capstone" ? 30 : 10;
+        if (valEl) valEl.textContent = `${val} / ${max}`;
+
+        const res = calculateGrade();
+        const totalEl = document.getElementById("res-total");
+        const letterEl = document.getElementById("res-letter");
+        const gpaEl = document.getElementById("res-gpa");
+        const statusEl = document.getElementById("res-status");
+        const assignEl = document.getElementById("res-assign");
+        const cpEl = document.getElementById("res-checkpoint");
+        const capEl = document.getElementById("res-capstone");
+        const labEl = document.getElementById("res-lab");
+        const certBtn = document.getElementById("grade-claim-cert");
+
+        if (totalEl) totalEl.textContent = `${res.total.toFixed(1)}%`;
+        if (letterEl) letterEl.textContent = res.letter;
+        if (gpaEl) gpaEl.innerHTML = `Grade Point: <strong>${res.gpa} / 4.00</strong>`;
+        if (statusEl) {
+          statusEl.textContent = res.status;
+          statusEl.classList.toggle("is-warning", res.isWarning);
+        }
+        if (assignEl) assignEl.textContent = `${res.assignTotal.toFixed(1)} / 40`;
+        if (cpEl) cpEl.textContent = `${res.checkpointTotal.toFixed(1)} / 20`;
+        if (capEl) capEl.textContent = `${res.capstoneTotal.toFixed(1)} / 30`;
+        if (labEl) labEl.textContent = `${res.labTotal.toFixed(1)} / 10`;
+        if (certBtn) {
+          certBtn.disabled = res.total < 60;
+          certBtn.textContent = res.total >= 60 ? "Preview Verified Certificate ↗" : "Score 60%+ to Unlock Certificate";
+        }
+      });
+    });
+
+    const certBtn = document.getElementById("grade-claim-cert");
+    if (certBtn) certBtn.addEventListener("click", () => {
+      document.getElementById("library-dialog").close();
+      openCertificateDialog();
+    });
+  }
+
+  // Tools Checklist events
+  if (app.libraryTab === "checklist") {
+    document.querySelectorAll("[data-tool-id]").forEach((cb) => {
+      cb.addEventListener("change", (e) => {
+        toggleToolCheck(e.target.dataset.toolId);
+      });
+    });
   }
 }
 
@@ -1756,6 +2171,7 @@ function exportResearchPlan() {
 
 function openPart(index) {
   if (!Number.isInteger(index) || index < 0 || index >= app.parts.length) return;
+  stopAudio();
   cancelExecution();
   app.currentPart = index;
   const part = app.parts[index];
@@ -1767,6 +2183,49 @@ function openPart(index) {
   initializeModelPlayground();
   renderNav();
   window.scrollTo(0, 0);
+
+  // Audio companion listeners
+  const audioPlayBtn = document.getElementById("audio-play-btn");
+  const audioSpeedBtn = document.getElementById("audio-speed-btn");
+  const audioStopBtn = document.getElementById("audio-stop-btn");
+  if (audioPlayBtn) audioPlayBtn.addEventListener("click", () => togglePlayAudio(part));
+  if (audioSpeedBtn) audioSpeedBtn.addEventListener("click", toggleAudioSpeed);
+  if (audioStopBtn) audioStopBtn.addEventListener("click", stopAudio);
+
+  // AI Mentor listeners
+  document.querySelectorAll(".mentor-preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const type = btn.dataset.prompt;
+      getMentorResponse(type, part.chapter);
+    });
+  });
+  const mentorForm = document.getElementById("mentor-chat-form");
+  if (mentorForm) {
+    mentorForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = document.getElementById("mentor-chat-input");
+      if (input && input.value.trim()) {
+        answerMentorCustom(input.value.trim(), part.chapter);
+        input.value = "";
+      }
+    });
+  }
+
+  // Lesson notes
+  loadLessonNote(index);
+  const notesTextarea = document.getElementById("lesson-notes-input");
+  let noteDebounce;
+  if (notesTextarea) {
+    notesTextarea.addEventListener("input", (e) => {
+      clearTimeout(noteDebounce);
+      noteDebounce = setTimeout(() => {
+        saveLessonNote(index, e.target.value);
+      }, 500);
+    });
+  }
+  const exportNotesBtn = document.getElementById("export-notes-btn");
+  if (exportNotesBtn) exportNotesBtn.addEventListener("click", exportAllNotes);
+
   document.getElementById("code-editor").addEventListener("keydown", handleEditorKeydown);
   document.getElementById("run-code").addEventListener("click", () => executeCode("run"));
   document.getElementById("check-exercise").addEventListener("click", () => executeCode("check"));
@@ -1774,6 +2233,7 @@ function openPart(index) {
 }
 
 function showDashboard() {
+  stopAudio();
   cancelExecution();
   app.currentPart = null;
   document.getElementById("lesson-view").hidden = true;
@@ -1940,7 +2400,7 @@ function showToast(message, isError = false) {
 
 function persistGuestProgress() {
   try {
-    const key = app.courseId === "beginner" ? beginnerProgressKey : storageKey;
+    const key = app.courseId === "beginner" ? beginnerProgressKey : app.courseId === "pydsml" ? pydsmlProgressKey : storageKey;
     localStorage.setItem(key, JSON.stringify({ track: app.track, completed: app.completed }));
   } catch (error) {
     console.error("Could not save guest progress.", error);
@@ -1956,7 +2416,11 @@ async function saveProgress() {
   try {
     const data = await request("/api/progress", {
       method: "PUT",
-      body: { course: app.courseId, track: app.courseId === "beginner" ? "all-weeks" : app.track, completed: app.completed }
+      body: {
+        course: app.courseId,
+        track: (app.courseId === "beginner" || app.courseId === "pydsml") ? "all-weeks" : app.track,
+        completed: app.completed
+      }
     });
     app.completed = data.completed;
     app.track = pathways[data.track] ? data.track : "practitioner";
@@ -2013,6 +2477,9 @@ async function markComplete(index) {
   if (!app.completed.includes(index)) app.completed.push(index);
   app.completed.sort((a, b) => a - b);
   await saveProgress();
+  addXP(50, `Completed ${unitWord()} ${app.parts[index].part}`);
+  if (app.completed.length >= 1) unlockBadge("first_lesson");
+  if (app.completed.length >= app.parts.length) unlockBadge("handbook_grad");
   renderNav();
   renderDashboard();
   const button = document.querySelector(`[data-complete="${index}"]`);
@@ -2022,15 +2489,17 @@ async function markComplete(index) {
   }
 }
 
-function openAuth(mode = "login") {
+function openAuth(mode = "login", preserveEmail = "") {
   app.authMode = mode;
-  renderAuthMode();
-  document.getElementById("auth-dialog").showModal();
+  renderAuthMode(preserveEmail);
+  const dialog = document.getElementById("auth-dialog");
+  if (!dialog.open) dialog.showModal();
 }
 
-function renderAuthMode() {
+function renderAuthMode(preserveEmail = "") {
   const isSignup = app.authMode === "signup";
   const form = document.getElementById("auth-form");
+  const existingEmail = preserveEmail || (form && form.elements.email ? form.elements.email.value : "");
   form.elements.name.required = isSignup;
   document.getElementById("name-field").hidden = !isSignup;
   document.getElementById("auth-title").textContent = isSignup ? "Create your account." : "Welcome back.";
@@ -2041,8 +2510,11 @@ function renderAuthMode() {
   document.getElementById("auth-switch-copy").innerHTML = isSignup
     ? 'Already have an account? <button type="button" id="auth-switch">Sign in</button>'
     : 'New here? <button type="button" id="auth-switch">Create an account</button>';
-  document.getElementById("auth-error").textContent = "";
+  document.getElementById("auth-error").innerHTML = "";
   form.elements.password.autocomplete = isSignup ? "new-password" : "current-password";
+  if (existingEmail && form.elements.email) {
+    form.elements.email.value = existingEmail;
+  }
 }
 
 async function setAccount(payload, mode) {
@@ -2075,13 +2547,31 @@ async function submitAuth(event) {
   };
   if (app.authMode === "signup") body.name = form.elements.name.value.trim();
   submit.disabled = true;
-  errorElement.textContent = "";
+  errorElement.innerHTML = "";
   try {
     const endpoint = app.authMode === "signup" ? "/api/auth/register" : "/api/auth/login";
     const payload = await request(endpoint, { method: "POST", body });
     await setAccount(payload, app.authMode);
   } catch (error) {
-    errorElement.textContent = error.message;
+    const errorMsg = error && error.message ? error.message : "Authentication failed.";
+    if (app.authMode === "signup" && (errorMsg.toLowerCase().includes("already exists") || error.status === 409)) {
+      errorElement.innerHTML = `
+        <div class="auth-inline-notice">
+          <p>An account with that email already exists.</p>
+          <button type="button" class="auth-inline-link" id="auth-inline-signin">Sign in with this email →</button>
+        </div>
+      `;
+      const directBtn = document.getElementById("auth-inline-signin");
+      if (directBtn) {
+        directBtn.addEventListener("click", () => {
+          app.authMode = "login";
+          renderAuthMode(body.email);
+          form.elements.password.focus();
+        });
+      }
+    } else {
+      errorElement.textContent = errorMsg;
+    }
   } finally {
     submit.disabled = false;
   }
@@ -2169,7 +2659,25 @@ document.addEventListener("click", (event) => {
     return;
   }
   const moduleButton = target.closest("[data-open-module]");
-  if (moduleButton) openPart(Number(moduleButton.dataset.openModule));
+  if (moduleButton) {
+    openPart(Number(moduleButton.dataset.openModule));
+    return;
+  }
+  const copyBtn = target.closest("[data-copy]");
+  if (copyBtn) {
+    const snippetId = `snippet-${copyBtn.dataset.copy}`;
+    const codeEl = document.getElementById(snippetId);
+    if (codeEl) {
+      navigator.clipboard.writeText(codeEl.textContent).then(() => {
+        const original = copyBtn.textContent;
+        copyBtn.textContent = "Copied! ✓";
+        setTimeout(() => { copyBtn.textContent = original; }, 2000);
+        showToast("Code snippet copied to clipboard!");
+      }).catch(() => {
+        showToast("Could not copy snippet to clipboard.");
+      });
+    }
+  }
 });
 
 document.getElementById("back-button").addEventListener("click", showDashboard);
@@ -2184,13 +2692,17 @@ document.getElementById("theme-toggle").addEventListener("click", () => {
 });
 document.getElementById("auth-close").addEventListener("click", () => document.getElementById("auth-dialog").close());
 document.getElementById("auth-form").addEventListener("submit", submitAuth);
-document.getElementById("auth-switch").addEventListener("click", () => openAuth("signup"));
 document.getElementById("auth-switch-copy").addEventListener("click", (event) => {
-  if (event.target.closest("#auth-switch")) openAuth(app.authMode === "signup" ? "login" : "signup");
+  if (event.target.closest("#auth-switch")) {
+    const email = document.getElementById("auth-form")?.elements?.email?.value || "";
+    openAuth(app.authMode === "signup" ? "login" : "signup", email);
+  }
 });
 document.getElementById("about-open").addEventListener("click", () => document.getElementById("about-dialog").showModal());
 document.getElementById("about-close").addEventListener("click", () => document.getElementById("about-dialog").close());
 document.getElementById("about-done").addEventListener("click", () => document.getElementById("about-dialog").close());
+
+// Study Library
 document.getElementById("library-open").addEventListener("click", () => {
   app.libraryTab = "glossary";
   app.librarySearch = "";
@@ -2212,6 +2724,79 @@ document.getElementById("library-search").addEventListener("input", (event) => {
   input.focus();
   input.setSelectionRange(input.value.length, input.value.length);
 });
+
+// Flashcards Topbar Trigger
+const flashcardsTopBtn = document.getElementById("flashcards-top-btn");
+if (flashcardsTopBtn) {
+  flashcardsTopBtn.addEventListener("click", () => {
+    app.libraryTab = "flashcards";
+    app.librarySearch = "";
+    document.getElementById("library-search").value = "";
+    renderLibrary();
+    document.getElementById("library-dialog").showModal();
+  });
+}
+
+// Onboarding Path Finder
+const heroPathBtn = document.getElementById("hero-pathfinder-btn");
+const topPathBtn = document.getElementById("onboarding-open");
+const onboardClose = document.getElementById("onboarding-close");
+const onboardDialog = document.getElementById("onboarding-dialog");
+const onboardApplyBtn = document.getElementById("onboarding-apply-btn");
+
+if (heroPathBtn) heroPathBtn.addEventListener("click", openOnboardingDialog);
+if (topPathBtn) topPathBtn.addEventListener("click", openOnboardingDialog);
+if (onboardClose) onboardClose.addEventListener("click", () => onboardDialog.close());
+if (onboardDialog) {
+  onboardDialog.addEventListener("click", (e) => {
+    const choice = e.target.closest(".choice-card");
+    if (choice) handleOnboardingChoice(e);
+  });
+}
+if (onboardApplyBtn) onboardApplyBtn.addEventListener("click", applyOnboardingMatch);
+
+// Python Sandbox Modal
+const sandboxOpenBtn = document.getElementById("sandbox-open");
+const sandboxCloseBtn = document.getElementById("sandbox-close");
+const sandboxRunBtn = document.getElementById("sandbox-run-btn");
+const sandboxClearBtn = document.getElementById("sandbox-clear-btn");
+const sandboxResetBtn = document.getElementById("sandbox-reset-btn");
+const sandboxTemplateSel = document.getElementById("sandbox-template-select");
+
+if (sandboxOpenBtn) sandboxOpenBtn.addEventListener("click", openSandboxDialog);
+if (sandboxCloseBtn) sandboxCloseBtn.addEventListener("click", () => document.getElementById("sandbox-dialog").close());
+if (sandboxRunBtn) sandboxRunBtn.addEventListener("click", runSandboxCode);
+if (sandboxClearBtn) sandboxClearBtn.addEventListener("click", () => {
+  document.getElementById("sandbox-output").textContent = "";
+});
+if (sandboxResetBtn) sandboxResetBtn.addEventListener("click", () => {
+  if (sandboxTemplateSel) loadSandboxTemplate(sandboxTemplateSel.value);
+});
+if (sandboxTemplateSel) sandboxTemplateSel.addEventListener("change", (e) => loadSandboxTemplate(e.target.value));
+
+// Verifiable Certificate Modal
+const certOpenBtn = document.getElementById("certificate-open");
+const certCloseBtn = document.getElementById("certificate-close");
+const certPrintBtn = document.getElementById("cert-print-btn");
+const certRecipientInput = document.getElementById("cert-recipient-input");
+
+if (certOpenBtn) certOpenBtn.addEventListener("click", openCertificateDialog);
+if (certCloseBtn) certCloseBtn.addEventListener("click", () => document.getElementById("certificate-dialog").close());
+if (certPrintBtn) certPrintBtn.addEventListener("click", () => window.print());
+if (certRecipientInput) {
+  certRecipientInput.addEventListener("input", (e) => {
+    const name = e.target.value.trim() || "Learner";
+    const nameEl = document.getElementById("cert-recipient-name");
+    if (nameEl) nameEl.textContent = name;
+    try {
+      localStorage.setItem(certRecipientKey, e.target.value);
+    } catch (err) {
+      console.error("Could not save cert recipient.", err);
+    }
+  });
+}
+
+// Course Search
 document.getElementById("course-search").addEventListener("input", (event) => showSearch(event.currentTarget.value));
 document.getElementById("course-search").addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
@@ -2222,9 +2807,13 @@ document.getElementById("course-search").addEventListener("keydown", (event) => 
 
 async function initialize() {
   initializeTheme();
+  loadGamification();
+  renderGamificationHeader();
+  renderBadges();
+
   try {
     const savedCourse = localStorage.getItem(selectedCourseKey);
-    app.courseId = savedCourse === "beginner" ? "beginner" : "handbook";
+    app.courseId = (savedCourse === "beginner" || savedCourse === "pydsml") ? savedCourse : "handbook";
   } catch (error) {
     console.error("Could not load the selected course.", error);
     app.courseId = "handbook";
@@ -2233,17 +2822,21 @@ async function initialize() {
   app.track = guest.track;
   app.completed = guest.completed;
   renderAuthControls();
+
   try {
-    const [handbook, beginner, library, session] = await Promise.all([
+    const [handbook, beginner, pydsml, library, session] = await Promise.all([
       request("/api/course"),
       request("/api/course?course=beginner"),
+      request("/api/course?course=pydsml"),
       request("/api/library"),
       request("/api/auth/me")
     ]);
     app.courses.handbook = handbook.parts;
     app.courses.beginner = beginner.parts;
+    app.courses.pydsml = pydsml.parts;
     app.parts = app.courses[app.courseId];
     app.library = library;
+
     if (session.user) {
       app.user = session.user;
       app.csrfToken = session.csrfToken;
@@ -2254,6 +2847,7 @@ async function initialize() {
     renderAuthControls();
     renderNav();
     renderDashboard();
+    renderBadges();
   } catch (error) {
     console.error("Could not initialize the academy.", error);
     document.getElementById("continue-title").textContent = "Could not connect to the academy";

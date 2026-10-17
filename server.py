@@ -166,13 +166,14 @@ class AcademyHandler(BaseHTTPRequestHandler):
             course_id = body.get("course", "handbook")
             track = body.get("track")
             completed = body.get("completed")
-            if not isinstance(course_id, str) or course_id not in {"handbook", "beginner"}:
+            if not isinstance(course_id, str) or course_id not in {"handbook", "beginner", "pydsml"}:
                 raise ValueError("Choose a supported course.")
             valid_tracks = {"practitioner", "frontier"} if course_id == "handbook" else {"all-weeks"}
             if not isinstance(track, str) or track not in valid_tracks:
                 raise ValueError("Choose a supported learning pathway.")
+            max_parts = 14 if course_id in {"handbook", "beginner"} else 10
             if not isinstance(completed, list) or any(
-                type(index) is not int or not 0 <= index < 14 for index in completed
+                type(index) is not int or not 0 <= index < max_parts for index in completed
             ):
                 raise ValueError("Completed lessons must be a list of valid part numbers.")
         except (ValueError, json.JSONDecodeError) as error:
@@ -305,7 +306,7 @@ class AcademyHandler(BaseHTTPRequestHandler):
 
     def send_progress(self) -> None:
         course_id = parse_qs(urlsplit(self.path).query).get("course", ["handbook"])[0]
-        if course_id not in {"handbook", "beginner"}:
+        if course_id not in {"handbook", "beginner", "pydsml"}:
             self.send_json(HTTPStatus.BAD_REQUEST, {"error": "Choose a supported course."})
             return
         session = self.require_session()

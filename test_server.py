@@ -77,6 +77,13 @@ class AcademyApiTests(unittest.TestCase):
         self.assertEqual(len(course["parts"]), 14)
         self.assertTrue(all(part["visual"] and part["example"]["code"] for part in course["parts"]))
 
+    def test_pydsml_course_api_serves_all_14_weeks(self):
+        status, course, _ = self.request("GET", "/api/course?course=pydsml")
+        self.assertEqual(status, 200)
+        self.assertEqual(course["title"], "DIU CPC PyDSML Track")
+        self.assertEqual(len(course["parts"]), 14)
+        self.assertTrue(all(part["sections"] and part["exercise"]["tests"] and part["quiz"] for part in course["parts"]))
+
     def test_library_api_has_built_in_glossary_projects_and_toolkit(self):
         status, library, _ = self.request("GET", "/api/library")
         self.assertEqual(status, 200)

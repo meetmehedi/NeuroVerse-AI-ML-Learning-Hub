@@ -32,6 +32,7 @@
         <div class="course-switch" id="course-switch" role="group" aria-label="Choose a course">
           <button class="course-option is-active" type="button" data-course="handbook"><strong>AI Researcher’s Handbook</strong><small>14 parts · research pathway</small></button>
           <button class="course-option" type="button" data-course="beginner"><strong>Python → Machine Learning</strong><small>14 weeks · beginner pathway</small></button>
+          <button class="course-option" type="button" data-course="pydsml"><strong>DIU CPC PyDSML Track</strong><small>14 weeks · student & lab track</small></button>
         </div>
         <div class="sidebar-label" id="course-pathway-label">YOUR LEARNING PATH</div>
         <div class="track-switch" id="track-switch" role="group" aria-label="Choose a reading pathway">
@@ -57,14 +58,14 @@
           <div class="breadcrumbs"><span>My learning</span><span class="crumb-slash">/</span><strong id="breadcrumb-current">Overview</strong></div>
           <div class="topbar-right">
             <div class="streak-pill" id="streak-pill" title="Daily Learning Streak & XP">
-              <span class="streak-flame">🔥</span> <strong id="streak-count">1</strong>d
+              <span class="streak-label">STREAK</span> <strong id="streak-count">1</strong>d
               <span class="xp-divider">·</span>
               <span class="xp-badge"><strong id="xp-count">50</strong> XP</span>
             </div>
-            <button class="topbar-action-btn" id="onboarding-open" type="button" title="Diagnostic Assessment"><span aria-hidden="true">🧭</span> Start Here</button>
-            <button class="topbar-action-btn" id="sandbox-open" type="button" title="Open Interactive Python Sandbox"><span aria-hidden="true">⚡</span> Sandbox</button>
-            <button class="topbar-action-btn" id="flashcards-top-btn" type="button" title="Interactive Flashcards Deck"><span aria-hidden="true">🎴</span> Flashcards</button>
-            <button class="topbar-action-btn" id="certificate-open" type="button" title="View or Claim Certificate"><span aria-hidden="true">🏆</span> Certificate</button>
+            <button class="topbar-action-btn" id="onboarding-open" type="button" title="Diagnostic Assessment">Path Finder</button>
+            <button class="topbar-action-btn" id="sandbox-open" type="button" title="Open Interactive Python Sandbox">Python Sandbox</button>
+            <button class="topbar-action-btn" id="flashcards-top-btn" type="button" title="Interactive Flashcards Deck">Flashcards</button>
+            <button class="topbar-action-btn" id="certificate-open" type="button" title="View or Claim Certificate">Certificate</button>
             <label class="search-field"><span aria-hidden="true">⌕</span><input id="course-search" type="search" placeholder="Search lessons" aria-label="Search lessons"></label>
             <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"><span id="theme-symbol" aria-hidden="true">☾</span></button>
             <span class="saved-label" id="sync-status"><span class="saved-dot"></span> Sign in to sync progress</span>
@@ -111,7 +112,7 @@
 
           <section class="diagnostic-banner" aria-label="Personalized Learning Path Finder">
             <div class="diagnostic-copy">
-              <span class="diagnostic-tag">🎯 PERSONALIZED LEARNING ADVISOR</span>
+              <span class="diagnostic-tag">PERSONALIZED LEARNING ADVISOR</span>
               <h2>Not sure where to begin? Take the 30-second Path Finder</h2>
               <p>Whether you're brand-new to programming, an applied data practitioner, or preparing for frontier academic research, our diagnostic quiz matches you to the perfect curriculum.</p>
             </div>
@@ -187,6 +188,14 @@
                 <blockquote>A model is only as good as the question it helps us answer.</blockquote>
                 <span class="quote-attribution">A RESEARCHER'S REMINDER</span>
               </div>
+
+              <div class="manifesto-card">
+                <span class="manifesto-tag">THE RESEARCHER'S MANIFESTO</span>
+                <blockquote>“Let's dance in the era of AI. Build with purpose, test with skepticism, and let your curiosity guide the science.”</blockquote>
+                <div class="manifesto-author">
+                  <span>From <strong>The AI Researcher's Handbook</strong> by Mehedi Hasan</span>
+                </div>
+              </div>
             </aside>
           </div>
         </section>
@@ -240,8 +249,10 @@
       <nav class="library-tabs" aria-label="Study library sections">
         <button class="library-tab is-active" type="button" data-library-tab="glossary" aria-pressed="true">Glossary</button>
         <button class="library-tab" type="button" data-library-tab="formulas" aria-pressed="false">Formula book</button>
-        <button class="library-tab" type="button" data-library-tab="flashcards" aria-pressed="false">🎴 Flashcards</button>
-        <button class="library-tab" type="button" data-library-tab="cheatsheets" aria-pressed="false">📋 Cheat Sheets</button>
+        <button class="library-tab" type="button" data-library-tab="flashcards" aria-pressed="false">Flashcards</button>
+        <button class="library-tab" type="button" data-library-tab="cheatsheets" aria-pressed="false">Cheat Sheets</button>
+        <button class="library-tab" type="button" data-library-tab="gradecalc" aria-pressed="false">Grade Calculator</button>
+        <button class="library-tab" type="button" data-library-tab="checklist" aria-pressed="false">Setup Checklist</button>
         <button class="library-tab" type="button" data-library-tab="projects" aria-pressed="false">Project workbooks</button>
         <button class="library-tab" type="button" data-library-tab="toolkit" aria-pressed="false">Research toolkit</button>
       </nav>
@@ -252,7 +263,7 @@
     <dialog class="onboarding-dialog" id="onboarding-dialog" aria-labelledby="onboarding-title">
       <button class="dialog-close" id="onboarding-close" type="button" aria-label="Close Path Finder">×</button>
       <div class="onboarding-content">
-        <span class="diagnostic-tag">🧭 30-SECOND DIAGNOSTIC ADVISOR</span>
+        <span class="diagnostic-tag">30-SECOND DIAGNOSTIC ADVISOR</span>
         <h2 id="onboarding-title">Find Your Personalized AI Learning Path</h2>
         <p class="onboarding-subtitle">Answer 3 quick questions to get matched to the ideal curriculum tailored to your background and aspirations.</p>
         
@@ -261,21 +272,21 @@
           <h3>What is your current programming & Python background?</h3>
           <div class="option-cards-group">
             <button class="choice-card" type="button" data-field="experience" data-value="none">
-              <span class="choice-icon">🌱</span>
+              <span class="choice-num">1</span>
               <div>
                 <strong>Brand new to coding / No Python</strong>
                 <small>I want step-by-step guidance starting from variables and loops.</small>
               </div>
             </button>
             <button class="choice-card" type="button" data-field="experience" data-value="some">
-              <span class="choice-icon">💻</span>
+              <span class="choice-num">2</span>
               <div>
                 <strong>Some Python or programming basics</strong>
                 <small>I know basic syntax and want to build real machine learning models.</small>
               </div>
             </button>
             <button class="choice-card" type="button" data-field="experience" data-value="experienced">
-              <span class="choice-icon">🔬</span>
+              <span class="choice-num">3</span>
               <div>
                 <strong>Experienced coder / Data scientist / Researcher</strong>
                 <small>I want rigorous theoretical depth, transformers, and paper-writing methodology.</small>
@@ -289,21 +300,21 @@
           <h3>What is your primary goal right now?</h3>
           <div class="option-cards-group">
             <button class="choice-card" type="button" data-field="goal" data-value="python_ml">
-              <span class="choice-icon">🚀</span>
+              <span class="choice-num">1</span>
               <div>
                 <strong>Master Python & Machine Learning Fundamentals</strong>
                 <small>Go from zero code to training predictive models in 14 structured weeks.</small>
               </div>
             </button>
             <button class="choice-card" type="button" data-field="goal" data-value="practical_models">
-              <span class="choice-icon">⚡</span>
+              <span class="choice-num">2</span>
               <div>
                 <strong>Apply ML to Real Data in Industry</strong>
                 <small>Compare classifiers, prevent data leakage, and deploy reliable pipelines.</small>
               </div>
             </button>
             <button class="choice-card" type="button" data-field="goal" data-value="research">
-              <span class="choice-icon">🎓</span>
+              <span class="choice-num">3</span>
               <div>
                 <strong>Publish AI Research or Advance Academic Frontiers</strong>
                 <small>Formulate hypotheses, design ablations, evaluate LLMs, and write papers.</small>
@@ -317,14 +328,14 @@
           <h3>How much time do you want to invest weekly?</h3>
           <div class="option-cards-group">
             <button class="choice-card" type="button" data-field="time" data-value="casual">
-              <span class="choice-icon">⏱️</span>
+              <span class="choice-num">1</span>
               <div>
                 <strong>Bite-sized: 15–20 minutes / day</strong>
                 <small>One short chapter + hands-on Python exercise per session.</small>
               </div>
             </button>
             <button class="choice-card" type="button" data-field="time" data-value="intensive">
-              <span class="choice-icon">🔥</span>
+              <span class="choice-num">2</span>
               <div>
                 <strong>Deep Dive: 3–5 hours / week</strong>
                 <small>Code exercises, interactive visualizer, and project workbooks.</small>
@@ -334,7 +345,7 @@
         </div>
 
         <div class="onboarding-result" id="onboarding-result" hidden>
-          <div class="result-badge">✨ YOUR PERSONALIZED MATCH</div>
+          <div class="result-badge">YOUR RECOMMENDED CURRICULUM</div>
           <h3 id="result-match-title">Python → Machine Learning Pathway</h3>
           <p id="result-match-desc">Based on your goals, we recommend starting with our 14-week beginner curriculum to build confident coding and intuition before advancing to research papers.</p>
           <div class="result-actions">
@@ -385,11 +396,10 @@
     <dialog class="certificate-dialog" id="certificate-dialog" aria-labelledby="cert-title">
       <div class="cert-dialog-bar no-print">
         <div class="cert-bar-info">
-          <span class="sparkle">🏆</span>
           <strong>NeuroVerse Verified Certificate of Completion</strong>
         </div>
         <div class="cert-bar-actions">
-          <button class="button button-dark" id="cert-print-btn" type="button">🖨️ Print / Save PDF</button>
+          <button class="button button-dark" id="cert-print-btn" type="button">Print / Save PDF</button>
           <button class="dialog-close" id="certificate-close" type="button" aria-label="Close certificate">×</button>
         </div>
       </div>
@@ -398,7 +408,7 @@
           <span>Recipient Full Name:</span>
           <input type="text" id="cert-recipient-input" placeholder="Enter your full name" maxlength="60">
         </label>
-        <span class="cert-tip">💡 You can customize your name above before printing or saving.</span>
+        <span class="cert-tip">Note: You can customize your name above before printing or saving.</span>
       </div>
       <div class="certificate-frame" id="certificate-frame">
         <div class="cert-border-outer">

@@ -1,0 +1,757 @@
+{
+  "title": "DIU CPC PyDSML Track",
+  "description": "Your 14-week path from first Python script to a deployed machine learning project, built from the DIU Computer Programming Club PyDSML track for 2nd, 3rd and final year students at Dhaka International University.",
+  "orientation": "Aug 3, 2026 · Lab 1, 10:15 AM · Dhaka International University",
+  "gradingPolicy": {
+    "assignments": 40,
+    "checkpoints": 20,
+    "capstone": 30,
+    "participation": 10
+  },
+  "parts": [
+    {
+      "part": 1,
+      "title": "Orientation & Setup",
+      "chapter": "Week 1: Python Setup, VS Code & Environment Verification",
+      "minutes": 35,
+      "summary": "Configure your DIU CPC data science workstation with Python 3.12, VS Code, Git, and virtual environments.",
+      "objective": "Verify a working local Python environment, run sanity checks, and write your first algorithmic program.",
+      "sections": [
+        {
+          "title": "The Modern Data Science Toolchain",
+          "paragraphs": [
+            "Every professional data science project begins with a clean, reproducible setup. At DIU CPC, we mandate Python 3.10+, VS Code with Python and Pylance extensions, and Git for version control.",
+            "Never install libraries globally. Always activate an isolated virtual environment (venv) so that differing project requirements never corrupt each other."
+          ],
+          "bullets": [
+            "Use python3 -m venv .venv to initialize your local workspace.",
+            "Record exact pinned dependency versions in requirements.txt.",
+            "Orientation Lab: Aug 3, 2026, 10:15 AM at DIU Lab 1."
+          ]
+        },
+        {
+          "title": "Master Teacher Note: The DIU CPC Golden Rule",
+          "paragraphs": [
+            "Expected outputs vary slightly across library versions, random seeds, and hardware architectures. In the CPC PyDSML track, treat numeric outputs as representative, not dogma: verify the underlying logic first."
+          ],
+          "bullets": [
+            "Fix random seeds (random_state=42) across all baseline runs.",
+            "State your OS, Python version, and commit hash in assignment submissions."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "DIU CPC PyDSML Workstation Setup",
+        "caption": "LOCAL MACHINE · VIRTUALENV · VS CODE · GIT REPO · VERIFIED RUNTIME",
+        "nodes": [
+          {"label": "Python 3.12", "detail": "Base interpreter"},
+          {"label": "Virtualenv", "detail": "Isolated .venv"},
+          {"label": "VS Code", "detail": "Pylance + Jupyter"},
+          {"label": "Git Repository", "detail": "diucsecpc assignments"}
+        ]
+      },
+      "example": {
+        "description": "Calculate assignment weighted score",
+        "code": "weekly = 88.0\ncheckpoints = 92.0\ncapstone = 90.0\nparticipation = 95.0\n\ntotal = (weekly * 0.40) + (checkpoints * 0.20) + (capstone * 0.30) + (participation * 0.10)\nprint(f\"DIU CPC Course Grade: {total:.1f}% ({'A+' if total >= 80 else 'A'})\")"
+      },
+      "exercise": {
+        "prompt": "Calculate the final course grade using DIU CPC grading weights: assignments (40%), checkpoints (20%), capstone (30%), participation (10%). Store the numeric total in final_score.",
+        "starter": "assignments = 85.0\ncheckpoints = 78.0\ncapstone = 90.0\nparticipation = 100.0\n\n# Compute weighted final score according to the syllabus\nfinal_score = 0.0",
+        "tests": "assert round(final_score, 2) == 86.6",
+        "hint": "Multiply assignments by 0.40, checkpoints by 0.20, capstone by 0.30, and participation by 0.10.",
+        "solution": "final_score = (assignments * 0.40) + (checkpoints * 0.20) + (capstone * 0.30) + (participation * 0.10)"
+      },
+      "quiz": {
+        "prompt": "What percentage of the final DIU CPC PyDSML grade is contributed by the Capstone project?",
+        "choices": ["30%", "40%", "20%", "10%"],
+        "answer": 0,
+        "explanation": "According to the PyDSML grading policy, the Capstone Project accounts for 30%, Weekly assignments 40%, Checkpoints 20%, and Participation 10%."
+      }
+    },
+    {
+      "part": 2,
+      "title": "Core Python & Logic",
+      "chapter": "Week 2: Data Structures, Functions & File I/O",
+      "minutes": 40,
+      "summary": "Master lists, tuples, sets, dictionaries, list comprehensions, and robust CSV file processing.",
+      "objective": "Build functions that parse structured student lab logs, filter outliers, and aggregate statistics.",
+      "sections": [
+        {
+          "title": "Idiomatic Data Structures for Data Science",
+          "paragraphs": [
+            "Lists represent ordered sequence streams; dictionaries represent keyed records with fast O(1) hash table lookups. Sets provide constant-time membership testing and deduplication.",
+            "List comprehensions and generator expressions allow concise, memory-efficient data filtering and transformations without clumsy nested loops."
+          ],
+          "bullets": [
+            "Use dict.get(key, default) to avoid KeyError crashes on messy datasets.",
+            "Use enumerate() and zip() for expressive, parallel loop processing."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Data Pipeline from Raw Input to Aggregated Output",
+        "caption": "RAW LOGS · DICTIONARY PARSE · LIST COMPREHENSION · SUMMARY STATS",
+        "nodes": [
+          {"label": "Raw Text", "detail": "Student lab records"},
+          {"label": "Dict Parser", "detail": "Key-value mapping"},
+          {"label": "Filter", "detail": "List comprehension"},
+          {"label": "Metrics", "detail": "Aggregated summary"}
+        ]
+      },
+      "example": {
+        "description": "Filter and aggregate scores above threshold",
+        "code": "student_scores = {'Naim': 82, 'Sabbir': 68, 'Tasnim': 94, 'Farhan': 73}\nhonor_roll = [name for name, score in student_scores.items() if score >= 80]\nprint(f\"Honor roll students: {honor_roll}\")"
+      },
+      "exercise": {
+        "prompt": "Filter the student_marks dictionary to find all students who scored 75 or higher. Store their names in a sorted list named eligible_students.",
+        "starter": "student_marks = {'Arefin': 74, 'Mahin': 88, 'Tanvir': 91, 'Jamil': 62, 'Rifat': 79}\n\n# Extract names of students with score >= 75 and sort them\neligible_students = []",
+        "tests": "assert sorted(eligible_students) == ['Mahin', 'Rifat', 'Tanvir']",
+        "hint": "Use a list comprehension with an if condition, then apply sorted().",
+        "solution": "eligible_students = sorted([name for name, score in student_marks.items() if score >= 75])"
+      },
+      "quiz": {
+        "prompt": "Which Python data structure provides the fastest average time complexity O(1) for membership testing?",
+        "choices": ["Set / Dictionary keys", "List", "Tuple", "Linked list"],
+        "answer": 0,
+        "explanation": "Sets and dictionary keys utilize hash tables, giving average O(1) lookup times compared to O(N) linear scans in lists."
+      }
+    },
+    {
+      "part": 3,
+      "title": "NumPy & Matrix Math",
+      "chapter": "Week 3: Numerical Python, Broadcasting & Linear Algebra",
+      "minutes": 40,
+      "summary": "Understand vectorized execution, memory layout, n-dimensional array manipulation, and broadcasting rules.",
+      "objective": "Perform multi-dimensional array operations, matrix multiplications, and compute vector norms efficiently.",
+      "sections": [
+        {
+          "title": "Why Vectorization Dominates Pure Python Loops",
+          "paragraphs": [
+            "Pure Python loops incur heavy dynamic type-checking overhead on every iteration. NumPy delegates array calculations to contiguous C-level memory blocks with SIMD vectorization.",
+            "Broadcasting allows NumPy to perform arithmetic on arrays of different shapes without copying data, stretching compatible trailing dimensions automatically."
+          ],
+          "bullets": [
+            "Avoid Python for-loops over arrays; use vectorized ufuncs (np.sum, np.mean).",
+            "Broadcasting rule: two dimensions are compatible if they are equal, or one of them is 1."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "NumPy Memory Layout and Broadcasting",
+        "caption": "CONTIGUOUS MEMORY BUFFER · SIMD OPERATIONS · ZERO-COPY BROADCASTING",
+        "nodes": [
+          {"label": "Python List", "detail": "Scattered pointers"},
+          {"label": "NumPy Array", "detail": "Contiguous C buffer"},
+          {"label": "Broadcasting", "detail": "Shape alignment"},
+          {"label": "Vectorized Op", "detail": "100x faster execution"}
+        ]
+      },
+      "example": {
+        "description": "Vector dot product and L2 normalization",
+        "code": "vector = [3.0, 4.0]\nl2_norm = (sum(x ** 2 for x in vector)) ** 0.5\nunit_vector = [x / l2_norm for x in vector]\nprint(f\"Unit Vector: {unit_vector}, Norm: {sum(x**2 for x in unit_vector)**0.5:.1f}\")"
+      },
+      "exercise": {
+        "prompt": "Calculate the Euclidean L2 norm of the given vector and store the result in norm.",
+        "starter": "vector = [6.0, 8.0]\n# Calculate Euclidean norm: sqrt(sum of squares)\nnorm = 0.0",
+        "tests": "assert norm == 10.0",
+        "hint": "Use (vector[0]**2 + vector[1]**2) ** 0.5.",
+        "solution": "norm = (sum(x ** 2 for x in vector)) ** 0.5"
+      },
+      "quiz": {
+        "prompt": "What happens when you multiply a (3, 1) matrix by a (1, 4) matrix in NumPy with broadcasting?",
+        "choices": ["It broadcasts to shape (3, 4)", "It raises a ValueError", "It produces shape (3, 1)", "It flattens to (12,)"],
+        "answer": 0,
+        "explanation": "Both dimensions are compatible because one axis is 1 in each array; NumPy broadcasts them to shape (3, 4)."
+      }
+    },
+    {
+      "part": 4,
+      "title": "Data Analysis & EDA",
+      "chapter": "Week 4: Exploratory Data Analysis with Pandas",
+      "minutes": 45,
+      "summary": "Load real-world tabular datasets, handle missing values, inspect distributions, and compute summary statistics.",
+      "objective": "Conduct comprehensive exploratory data analysis (EDA) and identify data anomalies before modeling.",
+      "sections": [
+        {
+          "title": "The First Rule of Real-World Data",
+          "paragraphs": [
+            "Real-world data is always messy: missing values, sensor errors, duplicated records, and distribution skews. An algorithm will uncritically fit whatever noise you feed it.",
+            "Exploratory Data Analysis (EDA) is the discipline of understanding data structure through descriptive statistics and visualizations before training any predictive model."
+          ],
+          "bullets": [
+            "Check df.info(), df.describe(), and missing value counts (df.isna().sum()).",
+            "Inspect class balance immediately when working with classification tasks."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Exploratory Data Analysis Pipeline",
+        "caption": "RAW CSV · DATA CLEANING · SUMMARY STATS · DISTRIBUTION PLOTS",
+        "nodes": [
+          {"label": "Raw Ingestion", "detail": "Read CSV / SQL"},
+          {"label": "Schema Audit", "detail": "Types & missingness"},
+          {"label": "EDA Stats", "detail": "Mean, median, IQR"},
+          {"label": "Clean Dataset", "detail": "Ready for modeling"}
+        ]
+      },
+      "example": {
+        "description": "Compute interquartile range (IQR) to detect outliers",
+        "code": "values = [10, 12, 14, 15, 16, 18, 20, 22, 100]\nq1 = sorted(values)[len(values) // 4]\nq3 = sorted(values)[(len(values) * 3) // 4]\niqr = q3 - q1\nupper_fence = q3 + 1.5 * iqr\noutliers = [x for x in values if x > upper_fence]\nprint(f\"Q1={q1}, Q3={q3}, IQR={iqr}, Outliers: {outliers}\")"
+      },
+      "exercise": {
+        "prompt": "Calculate the mean and standard deviation of values. Store the standard deviation in std_dev.",
+        "starter": "values = [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]\nmean = sum(values) / len(values)\n# Calculate sample standard deviation: sqrt(sum((x - mean)^2) / (N - 1))\nstd_dev = 0.0",
+        "tests": "assert round(mean, 2) == 5.0\nassert round(std_dev, 2) == 2.14",
+        "hint": "Divide the sum of squared deviations from the mean by len(values) - 1, then take square root.",
+        "solution": "variance = sum((x - mean) ** 2 for x in values) / (len(values) - 1)\nstd_dev = variance ** 0.5"
+      },
+      "quiz": {
+        "prompt": "Why is the median often preferred over the mean when describing skewed salary or home price data?",
+        "choices": [
+          "The median is robust against extreme outliers",
+          "The median is always higher than the mean",
+          "The median requires no computation",
+          "The median only works on integers"
+        ],
+        "answer": 0,
+        "explanation": "A few extreme values (like billionaires in a salary dataset) dramatically pull the mean upward, while the median remains unaffected."
+      }
+    },
+    {
+      "part": 5,
+      "title": "Data Preprocessing",
+      "chapter": "Week 5: Feature Engineering, Encoding & Imputation",
+      "minutes": 40,
+      "summary": "Prepare raw features for machine learning: categorical encoding, numerical scaling, and missing value strategies.",
+      "objective": "Transform heterogeneous feature columns into numeric tensors while avoiding data leakage.",
+      "sections": [
+        {
+          "title": "Teacher's Golden Rule: Split First",
+          "paragraphs": [
+            "Never fit a scaler or imputer on the whole dataset! Information about the test distribution (like test set mean or variance) will contaminate your model, leading to overly optimistic results that fail in production.",
+            "Fit your imputer, One-Hot Encoder, and StandardScaler strictly on the training partition, then transform both training and test sets using the fitted parameters."
+          ],
+          "bullets": [
+            "One-Hot Encoding for nominal variables (Color: Red, Blue, Green).",
+            "Ordinal Encoding for ranked variables (Size: Small, Medium, Large).",
+            "Use StandardScaler for models assuming Gaussian inputs (Logistic, SVM, Neural Nets)."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Preprocessing Without Data Leakage",
+        "caption": "RAW DATA · TRAIN/TEST SPLIT · FIT ON TRAIN ONLY · TRANSFORM TEST",
+        "nodes": [
+          {"label": "Raw Dataset", "detail": "Features & targets"},
+          {"label": "Split First", "detail": "Train (80%) Test (20%)"},
+          {"label": "Fit Preprocessing", "detail": "Train statistics only"},
+          {"label": "Transform Both", "detail": "Zero leakage"}
+        ]
+      },
+      "example": {
+        "description": "Standardize features using training mean and std",
+        "code": "train_x = [10.0, 20.0, 30.0]\ntest_x  = [15.0, 25.0]\n\nmu = sum(train_x) / len(train_x)\nsigma = (sum((x - mu)**2 for x in train_x) / len(train_x)) ** 0.5\n\nscaled_train = [(x - mu) / sigma for x in train_x]\nscaled_test  = [(x - mu) / sigma for x in test_x]\nprint(f\"Train Scaled: {scaled_train}\")\nprint(f\"Test Scaled:  {scaled_test}\")"
+      },
+      "exercise": {
+        "prompt": "Compute min-max scaling for test_val using training min and max values. Formula: (x - min) / (max - min). Store in scaled_val.",
+        "starter": "train_min = 10.0\ntrain_max = 50.0\ntest_val = 30.0\n\n# Compute min-max scaled value\nscaled_val = 0.0",
+        "tests": "assert scaled_val == 0.5",
+        "hint": "Subtract train_min from test_val, then divide by (train_max - train_min).",
+        "solution": "scaled_val = (test_val - train_min) / (train_max - train_min)"
+      },
+      "quiz": {
+        "prompt": "Why must you NOT calculate feature mean and standard deviation on the full dataset before splitting?",
+        "choices": [
+          "It causes data leakage by exposing test statistics during training",
+          "It makes computation twice as slow",
+          "It causes an automatic syntax error",
+          "It changes the number of rows in the dataset"
+        ],
+        "answer": 0,
+        "explanation": "Calculating normalization parameters on the entire dataset incorporates test-set distribution information into the training pipeline, violating independent held-out evaluation."
+      }
+    },
+    {
+      "part": 6,
+      "title": "Supervised Regression",
+      "chapter": "Week 6: Linear Regression, Cost Functions & Regularization",
+      "minutes": 45,
+      "summary": "Understand ordinary least squares, gradient descent optimization, mean squared error, and Ridge/Lasso penalties.",
+      "objective": "Train and evaluate linear regression models, interpret feature weights, and prevent overfitting with regularization.",
+      "sections": [
+        {
+          "title": "The Geometry of Linear Prediction",
+          "paragraphs": [
+            "Linear regression predicts a continuous target via a weighted combination of input features plus an intercept: y = w1*x1 + w2*x2 + ... + b.",
+            "Ordinary Least Squares (OLS) finds the hyperplane that minimizes the Mean Squared Error (MSE). When features are collinear or numerous, L2 (Ridge) and L1 (Lasso) penalties prevent weights from exploding."
+          ],
+          "bullets": [
+            "Ridge (L2): shrinks weights smoothly toward zero, handling multicollinearity.",
+            "Lasso (L1): drives non-informative feature weights strictly to zero, performing automated feature selection.",
+            "Evaluate using RMSE, MAE, and R² (coefficient of determination)."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Linear Regression and Loss Surface",
+        "caption": "HYPERPLANE FIT · RESIDUAL SQUARES · GRADIENT DESCENT UPDATES",
+        "nodes": [
+          {"label": "Input X", "detail": "Normalized features"},
+          {"label": "Weights W", "detail": "Learned coefficients"},
+          {"label": "MSE Loss", "detail": "Mean squared residual"},
+          {"label": "Gradient Step", "detail": "Optimal parameter fit"}
+        ]
+      },
+      "example": {
+        "description": "Calculate Mean Squared Error (MSE)",
+        "code": "y_true = [3.0, -0.5, 2.0, 7.0]\ny_pred = [2.5,  0.0, 2.0, 8.0]\nmse = sum((yt - yp) ** 2 for yt, yp in zip(y_true, y_pred)) / len(y_true)\nprint(f\"MSE: {mse:.4f}, RMSE: {mse**0.5:.4f}\")"
+      },
+      "exercise": {
+        "prompt": "Calculate the Mean Absolute Error (MAE) between y_true and y_pred. Formula: sum(|y_true - y_pred|) / N. Store in mae.",
+        "starter": "y_true = [10.0, 20.0, 30.0, 40.0]\ny_pred = [12.0, 18.0, 33.0, 39.0]\n\n# Calculate Mean Absolute Error\nmae = 0.0",
+        "tests": "assert mae == 2.0",
+        "hint": "Use abs(yt - yp) inside a sum, then divide by len(y_true).",
+        "solution": "mae = sum(abs(yt - yp) for yt, yp in zip(y_true, y_pred)) / len(y_true)"
+      },
+      "quiz": {
+        "prompt": "Which regularization technique can shrink feature weights to exactly zero, performing feature selection?",
+        "choices": [
+          "L1 Regularization (Lasso)",
+          "L2 Regularization (Ridge)",
+          "Unregularized OLS",
+          "Batch Normalization"
+        ],
+        "answer": 0,
+        "explanation": "L1 regularization introduces a diamond-shaped constraint region with sharp corners on feature axes, driving weights of uninformative features strictly to zero."
+      }
+    },
+    {
+      "part": 7,
+      "title": "Supervised Classification",
+      "chapter": "Week 7: Logistic Regression, Decision Trees & Midterm Checkpoint",
+      "minutes": 50,
+      "summary": "Master binary classification, the sigmoid function, decision tree splits with Gini impurity, and pass Checkpoint Exam 1.",
+      "objective": "Train classic classifiers, visualize decision boundaries, and interpret probabilities.",
+      "sections": [
+        {
+          "title": "From Linear Scores to Probabilities",
+          "paragraphs": [
+            "Logistic regression passes a linear score z through the sigmoid function: σ(z) = 1 / (1 + e^-z), mapping real numbers to [0, 1] as class probabilities.",
+            "Decision trees recursively split feature space along orthogonal boundaries to maximize node purity, measured by Gini impurity or Shannon entropy."
+          ],
+          "bullets": [
+            "Checkpoint Exam 1 covers Weeks 1 through 7 (20% of your course grade).",
+            "Decision Trees require no feature scaling, but are prone to high variance if left unpruned."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Linear Boundary vs Tree Partitioning",
+        "caption": "LOGISTIC SIGMOID BOUNDARY · DECISION TREE AXIS-ALIGNED RECTANGLES",
+        "nodes": [
+          {"label": "Linear Score", "detail": "z = w·x + b"},
+          {"label": "Sigmoid", "detail": "P(Y=1|X) in [0, 1]"},
+          {"label": "Tree Splits", "detail": "Gini minimization"},
+          {"label": "Decision Class", "detail": "0 or 1 prediction"}
+        ]
+      },
+      "example": {
+        "description": "Calculate Gini Impurity for a binary node",
+        "code": "p_positive = 0.8\np_negative = 0.2\ngini = 1.0 - (p_positive**2 + p_negative**2)\nprint(f\"Node Gini Impurity: {gini:.2f} (Pure node = 0.0, Maximum impurity = 0.5)\")"
+      },
+      "exercise": {
+        "prompt": "Calculate Gini impurity for a split node containing 3 positive instances and 1 negative instance. Store in gini_impurity.",
+        "starter": "pos = 3\nneg = 1\ntotal = pos + neg\n# Calculate Gini Impurity: 1 - sum(p_i^2)\ngini_impurity = 0.0",
+        "tests": "assert gini_impurity == 0.375",
+        "hint": "p_pos = 3/4, p_neg = 1/4. Gini = 1 - (p_pos**2 + p_neg**2).",
+        "solution": "p1 = pos / total\np2 = neg / total\ngini_impurity = 1.0 - (p1**2 + p2**2)"
+      },
+      "quiz": {
+        "prompt": "What is the Gini impurity of a perfectly pure node where all samples belong to the exact same class?",
+        "choices": ["0.0", "0.5", "1.0", "0.25"],
+        "answer": 0,
+        "explanation": "If all samples belong to one class, p=1.0 and Gini = 1 - 1.0^2 = 0.0."
+      }
+    },
+    {
+      "part": 8,
+      "title": "Advanced Classifiers",
+      "chapter": "Week 8: Support Vector Machines & K-Nearest Neighbors",
+      "minutes": 45,
+      "summary": "Understand margin maximization, the SVM kernel trick, distance metrics, and non-parametric instance-based learning.",
+      "objective": "Select optimal kernels, tune hyperparameters (C, gamma, k), and evaluate classification boundaries.",
+      "sections": [
+        {
+          "title": "Maximizing the Margin of Separation",
+          "paragraphs": [
+            "Support Vector Machines find the hyperplane that maximizes the margin (distance) between the closest opposing data points (support vectors).",
+            "The Kernel Trick projects non-linearly separable data into higher-dimensional Hilbert spaces without computing coordinates explicitly."
+          ],
+          "bullets": [
+            "Always scale features before running SVM and KNN (distance is scale-dependent!).",
+            "Choose small k in KNN for flexible boundaries; choose larger k to resist noise."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Maximum Margin Hyperplane and Kernels",
+        "caption": "SUPPORT VECTORS · MARGIN CUSHION · RBF KERNEL PROJECTION",
+        "nodes": [
+          {"label": "Support Vectors", "detail": "Critical boundary points"},
+          {"label": "Margin Cushion", "detail": "2 / ||w|| width"},
+          {"label": "RBF Kernel", "detail": "Infinite dimensions"},
+          {"label": "Robust Boundary", "detail": "Max generalization"}
+        ]
+      },
+      "example": {
+        "description": "K-Nearest Neighbors distance prediction",
+        "code": "neighbors = [(0.2, 1), (0.5, 1), (0.9, 0)] # (distance, label)\nk = 3\nvotes = [label for _, label in neighbors[:k]]\npredicted = 1 if votes.count(1) > votes.count(0) else 0\nprint(f\"KNN (k={k}) Votes: {votes} -> Predicted: {predicted}\")"
+      },
+      "exercise": {
+        "prompt": "In a 5-nearest neighbors classification, the labels of the 5 closest neighbors are given. Find the majority class (0 or 1) and store in prediction.",
+        "starter": "neighbor_labels = [1, 0, 1, 1, 0]\n# Find majority class\nprediction = 0",
+        "tests": "assert prediction == 1",
+        "hint": "Check if neighbor_labels.count(1) > neighbor_labels.count(0).",
+        "solution": "prediction = 1 if neighbor_labels.count(1) > neighbor_labels.count(0) else 0"
+      },
+      "quiz": {
+        "prompt": "Why is feature scaling mandatory before training K-Nearest Neighbors or SVM with RBF kernel?",
+        "choices": [
+          "Unscaled features with large numerical ranges dominate distance calculations",
+          "NumPy crashes on unscaled arrays",
+          "It guarantees 100% training accuracy",
+          "It reduces the number of features automatically"
+        ],
+        "answer": 0,
+        "explanation": "Distance calculations rely on coordinate differences; a feature in thousands (like salary) will overwhelm a feature in single digits (like age) unless both are normalized."
+      }
+    },
+    {
+      "part": 9,
+      "title": "Model Evaluation & Metrics",
+      "chapter": "Week 9: Confusion Matrix, ROC-AUC & The 99% Accuracy Trap",
+      "minutes": 45,
+      "summary": "Master precision, recall, specificity, F1-score, ROC curves, and cross-validation protocols.",
+      "objective": "Diagnose classification errors, detect class imbalance traps, and plot ROC curves.",
+      "sections": [
+        {
+          "title": "Master Teacher Note: The 99% Accuracy Trap",
+          "paragraphs": [
+            "Consider a disease detection task where 99 out of 100 people are healthy, and 1 has the disease. A useless dummy model that simply predicts 'Healthy' for everyone achieves 99% accuracy!",
+            "Accuracy is misleading on imbalanced datasets. You must evaluate Precision (how many predicted sick people actually have the disease) and Recall (how many sick people the test successfully detected)."
+          ],
+          "bullets": [
+            "Precision = TP / (TP + FP) — cost of false alarms.",
+            "Recall = TP / (TP + FN) — cost of missed positives.",
+            "F1-Score = 2 * (Precision * Recall) / (Precision + Recall)."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "The Four Quadrants of the Confusion Matrix",
+        "caption": "TRUE POSITIVES · FALSE POSITIVES · TRUE NEGATIVES · FALSE NEGATIVES",
+        "nodes": [
+          {"label": "Actual Positives", "detail": "TP (Hit) & FN (Miss)"},
+          {"label": "Actual Negatives", "detail": "TN (Correct) & FP (Alarm)"},
+          {"label": "Precision", "detail": "TP / (TP + FP)"},
+          {"label": "Recall", "detail": "TP / (TP + FN)"}
+        ]
+      },
+      "example": {
+        "description": "Calculate F1 score from TP, FP, FN",
+        "code": "tp, fp, fn = 80, 10, 20\nprec = tp / (tp + fp)\nrec = tp / (tp + fn)\nf1 = 2 * prec * rec / (prec + rec)\nprint(f\"Precision: {prec:.1%}, Recall: {rec:.1%}, F1-Score: {f1:.3f}\")"
+      },
+      "exercise": {
+        "prompt": "Calculate Precision and Recall from tp=45, fp=5, fn=15. Store the harmonic mean F1-Score in f1.",
+        "starter": "tp, fp, fn = 45, 5, 15\n# Calculate F1-Score\nf1 = 0.0",
+        "tests": "assert round(f1, 3) == 0.818",
+        "hint": "prec = tp/(tp+fp), rec = tp/(tp+fn), f1 = 2*prec*rec/(prec+rec).",
+        "solution": "prec = tp / (tp + fp)\nrec = tp / (tp + fn)\nf1 = 2 * (prec * rec) / (prec + rec)"
+      },
+      "quiz": {
+        "prompt": "In a cancer screening system, which metric should be prioritized to ensure as few malignant tumors as possible are missed?",
+        "choices": [
+          "Recall (Sensitivity)",
+          "Precision",
+          "Accuracy",
+          "Specificity"
+        ],
+        "answer": 0,
+        "explanation": "High recall minimizes False Negatives, ensuring that individuals who actually have cancer are not mistakenly sent home."
+      }
+    },
+    {
+      "part": 10,
+      "title": "Ensemble Learning",
+      "chapter": "Week 10: Bagging, Random Forests & Gradient Boosting (XGBoost)",
+      "minutes": 50,
+      "summary": "Harness the wisdom of crowds: build bagging ensembles, random forests, and gradient boosted decision trees.",
+      "objective": "Train and tune XGBoost and Random Forest models on structured tabular benchmarks.",
+      "sections": [
+        {
+          "title": "The Dominance of Tree Ensembles on Tabular Data",
+          "paragraphs": [
+            "In Kaggle competitions and industry production systems, Gradient Boosted Decision Trees (XGBoost, LightGBM, CatBoost) consistently outperform deep learning on tabular data.",
+            "Random Forests train independent trees in parallel on bootstrap samples. Boosting trains trees sequentially, where each new tree fits the residual errors of prior trees."
+          ],
+          "bullets": [
+            "Random Forest: variance reduction through bagging and feature subsampling.",
+            "Gradient Boosting: bias reduction through iterative gradient descent on loss residuals.",
+            "Always tune n_estimators, max_depth, and learning_rate."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Bagging vs Boosting Architecture",
+        "caption": "RANDOM FOREST (PARALLEL VOTING) VS GRADIENT BOOSTING (SEQUENTIAL CORRECTION)",
+        "nodes": [
+          {"label": "Bootstrap Samples", "detail": "Diverse training splits"},
+          {"label": "Parallel Trees", "detail": "Average / Majority vote"},
+          {"label": "Residuals", "detail": "Errors from prior tree"},
+          {"label": "Boosted Series", "detail": "Gradient descent update"}
+        ]
+      },
+      "example": {
+        "description": "Simulate ensemble voting",
+        "code": "tree_preds = [1, 1, 0, 1, 1, 0, 1]\nensemble_vote = 1 if tree_preds.count(1) > len(tree_preds) / 2 else 0\nconfidence = tree_preds.count(ensemble_vote) / len(tree_preds)\nprint(f\"Ensemble Vote: {ensemble_vote} (Agreement: {confidence:.0%})\")"
+      },
+      "exercise": {
+        "prompt": "Given 7 individual tree predictions in an ensemble, calculate the proportion of trees that predicted class 1. Store in agreement_ratio.",
+        "starter": "tree_votes = [1, 1, 1, 0, 1, 0, 1]\n# Calculate proportion of class 1 votes\nagreement_ratio = 0.0",
+        "tests": "assert round(agreement_ratio, 3) == 0.714",
+        "hint": "Divide tree_votes.count(1) by len(tree_votes).",
+        "solution": "agreement_ratio = tree_votes.count(1) / len(tree_votes)"
+      },
+      "quiz": {
+        "prompt": "What is the primary difference in how Random Forests and Gradient Boosted Trees build their ensembles?",
+        "choices": [
+          "Random Forests build trees in parallel; Gradient Boosting builds trees sequentially",
+          "Random Forests only work for regression; Boosting only for classification",
+          "Random Forests do not use decision trees",
+          "Gradient Boosting cannot handle non-linear data"
+        ],
+        "answer": 0,
+        "explanation": "Random Forest trains diverse trees independently in parallel; Gradient Boosting builds trees sequentially, where each tree corrects the residual errors of its predecessor."
+      }
+    },
+    {
+      "part": 11,
+      "title": "Unsupervised Learning",
+      "chapter": "Week 11: K-Means Clustering & Principal Component Analysis (PCA)",
+      "minutes": 45,
+      "summary": "Discover hidden structures in unlabeled data: Lloyd's algorithm, silhouette scores, and dimensionality reduction.",
+      "objective": "Segment customer profiles with K-Means and compress high-dimensional feature spaces with PCA.",
+      "sections": [
+        {
+          "title": "Finding Structure Without Labels",
+          "paragraphs": [
+            "Most data in the real world is unlabeled. Unsupervised learning identifies latent clusters, groupings, and low-dimensional manifolds without human annotations.",
+            "K-Means iteratively alternates between assigning points to the nearest centroid and recalculating centroid positions. PCA finds the orthogonal axes of maximum variance to compress dimensions."
+          ],
+          "bullets": [
+            "Use the Elbow Method and Silhouette Score to choose cluster count k.",
+            "Use PCA to visualize high-dimensional data in 2D or 3D scatter plots."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "Clustering and Dimensionality Reduction",
+        "caption": "DISTANCE TO CENTROIDS · CLUSTER ASSIGNMENTS · MAXIMUM VARIANCE PROJECTION",
+        "nodes": [
+          {"label": "Unlabeled Points", "detail": "Raw feature space"},
+          {"label": "K-Means", "detail": "Lloyd's clustering loop"},
+          {"label": "Eigenvectors", "detail": "Principal components"},
+          {"label": "2D Projection", "detail": "Interpretable clusters"}
+        ]
+      },
+      "example": {
+        "description": "Calculate Euclidean distance to cluster centroids",
+        "code": "point = (2.0, 3.0)\ncentroids = [(1.0, 1.0), (5.0, 5.0)]\ndistances = [((point[0]-c[0])**2 + (point[1]-c[1])**2)**0.5 for c in centroids]\nclosest_cluster = distances.index(min(distances))\nprint(f\"Point {point} assigned to Centroid {closest_cluster} (dist={min(distances):.2f})\")"
+      },
+      "exercise": {
+        "prompt": "Assign point (3.0, 4.0) to the closer of two centroids: c0=(0.0, 0.0) or c1=(4.0, 5.0). Store cluster index (0 or 1) in assigned_cluster.",
+        "starter": "p = (3.0, 4.0)\nc0 = (0.0, 0.0)\nc1 = (4.0, 5.0)\n\n# Calculate distances and pick closer cluster\nassigned_cluster = -1",
+        "tests": "assert assigned_cluster == 1",
+        "hint": "Distance to c0 is 5.0; distance to c1 is sqrt(1 + 1) = 1.41.",
+        "solution": "d0 = ((p[0]-c0[0])**2 + (p[1]-c0[1])**2)**0.5\nd1 = ((p[0]-c1[0])**2 + (p[1]-c1[1])**2)**0.5\nassigned_cluster = 0 if d0 < d1 else 1"
+      },
+      "quiz": {
+        "prompt": "What does Principal Component Analysis (PCA) preserve when projecting data onto fewer dimensions?",
+        "choices": [
+          "Maximum variance of the data",
+          "Target labels of the dataset",
+          "Categorical text strings",
+          "Missing values"
+        ],
+        "answer": 0,
+        "explanation": "PCA identifies orthogonal principal directions that maximize the variance of the projected data points, minimizing reconstruction error."
+      }
+    },
+    {
+      "part": 12,
+      "title": "Neural Networks & PyTorch",
+      "chapter": "Week 12: Deep Learning Foundations & PyTorch Workflows",
+      "minutes": 50,
+      "summary": "Build multi-layer perceptrons from scratch: forward pass, activation functions, backpropagation, and PyTorch tensors.",
+      "objective": "Implement an end-to-end neural network training loop in PyTorch with loss calculation and gradient updates.",
+      "sections": [
+        {
+          "title": "The Anatomy of a Deep Learning Loop",
+          "paragraphs": [
+            "A neural network is a parameterized function approximator. In PyTorch, every training step follows five sacred lines: (1) forward pass, (2) compute loss, (3) zero gradients, (4) backward pass, and (5) optimizer step.",
+            "Activation functions (ReLU, GeLU, Sigmoid) introduce non-linearity. Without them, even a 100-layer neural network collapses into a single linear regression!"
+          ],
+          "bullets": [
+            "optimizer.zero_grad() prevents gradient accumulation across batches.",
+            "loss.backward() executes reverse-mode autodiff through the computation graph.",
+            "optimizer.step() updates weights via gradient descent."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "The PyTorch Training Step",
+        "caption": "FORWARD PASS · CRITERION LOSS · ZERO GRAD · BACKPROP · OPTIMIZER STEP",
+        "nodes": [
+          {"label": "Model(X)", "detail": "Prediction logits"},
+          {"label": "Loss(y_pred, y)", "detail": "Scalar error"},
+          {"label": "backward()", "detail": "Autodiff gradients"},
+          {"label": "step()", "detail": "Weight updates"}
+        ]
+      },
+      "example": {
+        "description": "Forward pass of a single neuron with ReLU",
+        "code": "inputs = [1.5, -2.0, 3.0]\nweights = [0.4, 0.8, -0.5]\nbias = 0.2\nz = sum(w * x for w, x in zip(weights, inputs)) + bias\nactivation = max(0.0, z) # ReLU\nprint(f\"Pre-activation z: {z:.2f}, Post-activation ReLU: {activation:.2f}\")"
+      },
+      "exercise": {
+        "prompt": "Compute the post-activation output of a neuron using the ReLU function: max(0.0, z), where z = sum(w_i * x_i) + bias. Store in output.",
+        "starter": "x = [2.0, 3.0]\nw = [0.5, -1.0]\nbias = 1.0\n# Compute ReLU output\noutput = 0.0",
+        "tests": "assert output == 0.0",
+        "hint": "z = (2.0*0.5) + (3.0*-1.0) + 1.0 = -1.0. ReLU(-1.0) = 0.0.",
+        "solution": "z = sum(wi * xi for wi, xi in zip(w, x)) + bias\noutput = max(0.0, z)"
+      },
+      "quiz": {
+        "prompt": "Why are non-linear activation functions (like ReLU) mandatory in multi-layer neural networks?",
+        "choices": [
+          "Without non-linearities, multiple linear layers collapse mathematically into a single linear transform",
+          "They prevent code from running out of memory",
+          "They automatically format images",
+          "They force all weights to become positive"
+        ],
+        "answer": 0,
+        "explanation": "The composition of linear functions is always strictly linear: W2*(W1*x) = (W2*W1)*x. Non-linear activations allow networks to approximate arbitrary complex functions."
+      }
+    },
+    {
+      "part": 13,
+      "title": "Model Deployment",
+      "chapter": "Week 13: Building Interactive ML Apps with Streamlit & FastAPI",
+      "minutes": 45,
+      "summary": "Transform your model into an interactive web application and REST API for real users.",
+      "objective": "Build a responsive Streamlit UI that accepts user inputs, calls a trained model, and visualizes predictions.",
+      "sections": [
+        {
+          "title": "From Jupyter Notebook to User-Facing Product",
+          "paragraphs": [
+            "A machine learning model locked in a notebook creates zero real-world value. To deploy your model, serialize it with joblib or safetensors and wrap it inside a web service.",
+            "Streamlit allows Python developers to build interactive, reactive web interfaces in pure Python without writing HTML, CSS, or JavaScript."
+          ],
+          "bullets": [
+            "Serialize models with joblib.dump(model, 'model.joblib').",
+            "Build UI controls: st.slider, st.selectbox, st.file_uploader.",
+            "Display predictions with st.success, st.metric, and st.pyplot."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "ML Model Deployment Pipeline",
+        "caption": "TRAINED MODEL · JOBLIB EXPORT · STREAMLIT UI · INTERACTIVE DEMO",
+        "nodes": [
+          {"label": "Trained Pipeline", "detail": "Scikit-Learn / PyTorch"},
+          {"label": "Model Artifact", "detail": "joblib / onnx file"},
+          {"label": "Streamlit App", "detail": "Interactive widgets"},
+          {"label": "Live Web App", "detail": "Shareable portfolio"}
+        ]
+      },
+      "example": {
+        "description": "Simulate model prediction API endpoint",
+        "code": "def predict_house_price(sqft, bedrooms):\n    base_price = 50000\n    return base_price + (sqft * 120) + (bedrooms * 25000)\n\nquote = predict_house_price(1200, 3)\nprint(f\"Predicted Property Value: ${quote:,}\")"
+      },
+      "exercise": {
+        "prompt": "Create a prediction function predict_churn(usage_score, tenure_months) where base probability is 0.80 minus (usage_score * 0.05) minus (tenure_months * 0.02). Store probability for usage_score=6, tenure_months=10 in churn_prob.",
+        "starter": "usage_score = 6\ntenure_months = 10\n# Calculate predicted churn probability\nchurn_prob = 0.0",
+        "tests": "assert round(churn_prob, 2) == 0.30",
+        "hint": "0.80 - (6 * 0.05) - (10 * 0.02) = 0.80 - 0.30 - 0.20 = 0.30.",
+        "solution": "churn_prob = 0.80 - (usage_score * 0.05) - (tenure_months * 0.02)"
+      },
+      "quiz": {
+        "prompt": "Which library allows Python engineers to create interactive data apps without writing frontend HTML or JavaScript?",
+        "choices": ["Streamlit", "NumPy", "Matplotlib", "Pytest"],
+        "answer": 0,
+        "explanation": "Streamlit converts Python scripts into interactive, reactive web applications with instant UI rendering."
+      }
+    },
+    {
+      "part": 14,
+      "title": "Capstone Showcase",
+      "chapter": "Week 14: Capstone Project Defense, Rubric & DIU CPC Showcase",
+      "minutes": 55,
+      "summary": "Synthesize your 14-week journey: complete your end-to-end ML project, pass self-review, and present your findings.",
+      "objective": "Submit your capstone code repository, reproducible report, interactive web demo, and defense presentation.",
+      "sections": [
+        {
+          "title": "The DIU CPC Capstone Project Deliverable",
+          "paragraphs": [
+            "Your capstone represents 30% of your course grade. It demonstrates your ability to identify a real-world problem, acquire data ethically, prevent leakage, evaluate multiple baselines, and present clear conclusions.",
+            "Every submission must include: (1) Clean Git repo with requirements.txt, (2) Documented EDA, (3) Baseline vs Tuned model comparisons with confidence intervals, and (4) A working Streamlit demo."
+          ],
+          "bullets": [
+            "Scored against the 4-part DIU CPC self-review rubric.",
+            "Celebrate your achievement: you have journeyed from first Python script to deployed ML!"
+          ]
+        },
+        {
+          "title": "The Closing Manifesto: Let's Dance",
+          "paragraphs": [
+            "'Life isn't about waiting for the storm to pass; it's about learning to dance in the rain.' As you graduate from this curriculum, remember to use AI to amplify human curiosity, creativity, and discovery—never to replace it."
+          ],
+          "bullets": [
+            "Claim your verified NeuroVerse / DIU CPC Certificate of Completion.",
+            "Advance to frontier research with The AI Researcher's Handbook."
+          ]
+        }
+      ],
+      "visual": {
+        "title": "From Novice to Capstone Graduate",
+        "caption": "WEEK 1 SETUP · FOUNDATIONS · MODELS · EVALUATION · DEPLOYED CAPSTONE",
+        "nodes": [
+          {"label": "Week 1", "detail": "Python & Git Setup"},
+          {"label": "Weeks 2-6", "detail": "Data Science Core"},
+          {"label": "Weeks 7-11", "detail": "ML & Ensembles"},
+          {"label": "Week 14", "detail": "Capstone Defense"}
+        ]
+      },
+      "example": {
+        "description": "Calculate total capstone milestone score",
+        "code": "rubric_scores = {'eda': 25, 'modeling': 25, 'evaluation': 25, 'presentation': 25}\nprint(f\"Capstone Total Score: {sum(rubric_scores.values())}/100 - Honors Defense Ready!\")"
+      },
+      "exercise": {
+        "prompt": "Compute the sum of rubric criteria scores: code_quality (25), evaluation_rigor (25), deployment (25), and presentation (25). Store in total_capstone.",
+        "starter": "criteria = [25, 25, 25, 25]\n# Calculate total capstone score\ntotal_capstone = 0",
+        "tests": "assert total_capstone == 100",
+        "hint": "Use sum(criteria).",
+        "solution": "total_capstone = sum(criteria)"
+      },
+      "quiz": {
+        "prompt": "What is the ultimate purpose of building an end-to-end capstone project with verifiable code?",
+        "choices": [
+          "To prove you can solve real-world problems with rigorous, reproducible, deployed ML",
+          "To memorize code syntax",
+          "To avoid writing tests",
+          "To replace human judgment entirely"
+        ],
+        "answer": 0,
+        "explanation": "A complete capstone demonstrates full-stack competence: data collection, EDA, modeling, unbiased evaluation, and deployment."
+      }
+    }
+  ]
+}
