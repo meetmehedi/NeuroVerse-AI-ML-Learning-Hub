@@ -1,0 +1,314 @@
+{
+  "parts": [
+    {
+      "part": "I",
+      "title": "AI Foundations",
+      "chapter": "Mapping the AI Landscape",
+      "minutes": 20,
+      "summary": "Build a clear mental model of AI, machine learning, deep learning, and systems built on top of them.",
+      "objective": "Map the relationships between AI, machine learning, deep learning, generative AI, and agents.",
+      "sections": [
+        {
+          "title": "A family of ideas",
+          "paragraphs": ["Artificial intelligence is the broad study of systems that perform tasks associated with intelligent behavior. Machine learning is one approach within AI: instead of specifying every rule, we fit a model to examples.", "Deep learning is a family of machine-learning methods built from multi-layer neural networks. Large language models are neural networks trained to model language; generative AI describes systems that create new content, and agents combine models with tools and a goal-directed loop."],
+          "bullets": ["AI is the umbrella; machine learning is one route to building AI.", "Deep learning uses layered neural networks to learn representations.", "Generative systems create outputs; agents use actions and feedback to pursue goals."]
+        },
+        {
+          "title": "Choose the right abstraction",
+          "paragraphs": ["A label is less important than the system's behavior and evidence. Ask what data the system learns from, what it produces, how it is evaluated, and what happens when it is wrong.", "When reading a paper, distinguish the method from the task. A transformer is an architecture; translation, classification, and retrieval are tasks."],
+          "bullets": ["Name the task before choosing a model.", "Keep model, data, and evaluation assumptions explicit."]
+        }
+      ],
+      "example": {"description": "Count model families", "code": "ai_models = [\"decision tree\", \"neural network\", \"language model\"]\nprint(f\"Model examples: {len(ai_models)}\")\nprint(f\"A language model is a kind of: {ai_models[-1]}\")"},
+      "exercise": {"prompt": "Create a list named ai_models containing three AI approaches and print its length.", "starter": "ai_models = [\"decision tree\", \"neural network\", \"language model\"]\n# Print the number of approaches", "tests": "assert len(ai_models) == 3\nassert \"neural network\" in ai_models\nassert \"language model\" in ai_models", "hint": "Use print(len(ai_models)).", "solution": "ai_models = [\"decision tree\", \"neural network\", \"language model\"]\nprint(len(ai_models))"},
+      "quiz": {"prompt": "Which statement best describes the relationship between AI and machine learning?", "choices": ["Machine learning is one approach within the broader field of AI.", "AI is a small branch inside machine learning.", "They are unrelated fields."], "answer": 0, "explanation": "AI is the broader field. Machine learning is one approach used to build AI systems."}
+    },
+    {
+      "part": "II",
+      "title": "Machine Learning",
+      "chapter": "Traditional Machine Learning Models",
+      "minutes": 35,
+      "summary": "Compare classic supervised models and learn what makes a fair evaluation.",
+      "objective": "Train and compare traditional classifiers with a reproducible evaluation workflow.",
+      "sections": [
+        {
+          "title": "Models make different assumptions",
+          "paragraphs": ["Logistic regression estimates a linear decision boundary; decision trees split features into rules. Support vector machines seek a large-margin boundary, while k-nearest neighbors uses nearby training examples to vote.", "Naive Bayes combines simple conditional-probability estimates. Random forests average many decorrelated trees, and boosted trees build a sequence of models that correct earlier errors. No model is best for every dataset."],
+          "bullets": ["Linear and distance-based methods often benefit from feature scaling.", "Tree ensembles model nonlinear patterns with limited feature engineering.", "Compare simple baselines before adding complexity."]
+        },
+        {
+          "title": "Evaluate without leakage",
+          "paragraphs": ["Split examples into training and test sets before fitting preprocessing steps. Fit a scaler or imputer using training data only, then apply the learned transformation to validation and test data.", "Accuracy can be misleading when classes are imbalanced. Precision, recall, F1, confusion matrices, and ROC-AUC each answer different questions; the metric should follow the cost of errors."],
+          "bullets": ["Never tune a model against the final test set.", "Use stratified splits when preserving class proportions matters.", "Record the random seed, model settings, and evaluation protocol."]
+        }
+      ],
+      "example": {"description": "Compute a test-set accuracy", "code": "actual = [1, 0, 0, 1]\npredicted = [1, 0, 1, 1]\ncorrect = sum(a == p for a, p in zip(actual, predicted))\naccuracy = correct / len(actual)\nprint(f\"Accuracy: {accuracy:.0%}\")"},
+      "exercise": {"prompt": "Calculate the accuracy of the predictions. Store the result in accuracy.", "starter": "actual = [1, 0, 0, 1]\npredicted = [1, 0, 1, 1]\ncorrect = sum(a == p for a, p in zip(actual, predicted))\n# Calculate accuracy from correct and total predictions\naccuracy = 0\nprint(f\"Accuracy: {accuracy:.0%}\")", "tests": "assert abs(accuracy - 0.75) < 1e-9", "hint": "Divide the number correct by len(actual).", "solution": "accuracy = correct / len(actual)"},
+      "quiz": {"prompt": "Why should the test set remain untouched during model tuning?", "choices": ["It gives a less biased estimate of performance on unseen data.", "It guarantees 100% accuracy.", "It makes every feature use the same scale."], "answer": 0, "explanation": "Repeated tuning on test results leaks information from the test set into model selection and makes the final estimate optimistic."}
+    },
+    {
+      "part": "III",
+      "title": "Explainable AI",
+      "chapter": "Explainable AI",
+      "minutes": 30,
+      "summary": "Understand feature importance, SHAP, LIME, and the limits of explanations.",
+      "objective": "Distinguish global explanations from local explanations and identify when each is useful.",
+      "sections": [
+        {
+          "title": "Global and local explanations",
+          "paragraphs": ["A global explanation describes patterns across a model or dataset. Permutation importance measures how much a chosen evaluation score changes when one feature is shuffled; correlated features can complicate interpretation.", "A local explanation focuses on one prediction. SHAP values attribute a prediction relative to a baseline under a specified feature-coalition framework. LIME fits a simpler model around a selected example."],
+          "bullets": ["Importance is not causality.", "An explanation describes a model, not necessarily the real-world process.", "Check stability across samples, seeds, and plausible perturbations."]
+        },
+        {
+          "title": "Explain responsibly",
+          "paragraphs": ["A visually persuasive explanation can still be misleading if its assumptions or scope are hidden. Test whether explanations change under small input changes, and compare them against domain knowledge.", "For high-impact decisions, report the model, explainer, baseline, target population, and known limitations. Explanations help people inspect a system; they do not replace validation or accountability."]
+        }
+      ],
+      "example": {"description": "Rank features by a simple importance score", "code": "feature_scores = {\"age\": 0.31, \"income\": 0.18, \"region\": 0.07}\nmost_important = max(feature_scores, key=feature_scores.get)\nprint(f\"Highest score: {most_important}\")"},
+      "exercise": {"prompt": "Find the name of the feature with the largest score and store it in important_feature.", "starter": "feature_scores = {\"age\": 0.31, \"income\": 0.18, \"region\": 0.07}\n# Find the key associated with the largest value\nimportant_feature = \"\"\nprint(important_feature)", "tests": "assert important_feature == \"age\"", "hint": "Use max(feature_scores, key=feature_scores.get).", "solution": "important_feature = max(feature_scores, key=feature_scores.get)"},
+      "quiz": {"prompt": "What does feature importance establish by itself?", "choices": ["Association with model behavior, not causation.", "That changing the feature will cause the outcome.", "That the model is fair."], "answer": 0, "explanation": "A model explanation describes how the model behaves. It does not, by itself, prove causal relationships or fairness."}
+    },
+    {
+      "part": "IV",
+      "title": "Deep Learning",
+      "chapter": "Deep Learning",
+      "minutes": 40,
+      "summary": "Explore neural networks, convolution, sequence models, and reliable training.",
+      "objective": "Connect neural-network building blocks to the tasks they are designed to solve.",
+      "sections": [
+        {
+          "title": "From units to networks",
+          "paragraphs": ["A neuron combines inputs with learned weights and a bias, then applies a nonlinear activation. Layers compose these transformations into a function; backpropagation computes gradients, and an optimizer updates the weights.", "Training minimizes a loss on training examples. Validation data helps compare settings and detect overfitting; the final test set should remain separate until the evaluation is decided."],
+          "bullets": ["Nonlinear activations let stacked layers represent richer functions.", "Learning rate controls the size of optimizer updates.", "Regularization and early stopping can reduce overfitting."]
+        },
+        {
+          "title": "Architectures reflect data structure",
+          "paragraphs": ["Convolutional networks reuse local filters across image positions. Recurrent networks process sequences with a state; LSTM and GRU gates help preserve information across longer sequences.", "Sequence-to-sequence models map one sequence to another, and attention lets a decoder select information from relevant input positions. Architecture choice should be justified against simpler baselines."]
+        }
+      ],
+      "example": {"description": "Compute a weighted sum", "code": "inputs = [0.8, 0.5]\nweights = [2.0, -0.4]\nbias = 0.4\nscore = sum(x * w for x, w in zip(inputs, weights)) + bias\nprint(f\"Pre-activation score: {score:.1f}\")"},
+      "exercise": {"prompt": "Compute the neuron's pre-activation score from inputs, weights, and bias.", "starter": "inputs = [0.8, 0.5]\nweights = [2.0, -0.4]\nbias = 0.4\n# Compute the weighted sum plus bias\nscore = 0\nprint(score)", "tests": "assert abs(score - 1.8) < 1e-9", "hint": "Pair each input with its weight, multiply, sum, then add bias.", "solution": "score = sum(x * w for x, w in zip(inputs, weights)) + bias"},
+      "quiz": {"prompt": "What does backpropagation compute during neural-network training?", "choices": ["Gradients of the loss with respect to model parameters.", "The final test-set score without fitting.", "A new training dataset."], "answer": 0, "explanation": "Backpropagation efficiently applies the chain rule to compute parameter gradients used by an optimizer."}
+    },
+    {
+      "part": "V",
+      "title": "Computer Vision",
+      "chapter": "Computer Vision",
+      "minutes": 30,
+      "summary": "Move from image representation to detection, segmentation, and evaluation.",
+      "objective": "Choose suitable vision tasks and metrics for an image-based research problem.",
+      "sections": [
+        {
+          "title": "Images are structured data",
+          "paragraphs": ["A digital image is a grid of pixel values, often arranged by height, width, and color channel. Preprocessing can resize, normalize, or augment images, but every transformation should be consistent with the intended deployment setting.", "Image classification predicts labels for whole images. Object detection adds locations, semantic segmentation labels pixels by class, and instance segmentation separates individual objects."],
+          "bullets": ["Keep patient, subject, or source-level separation when samples are related.", "Use augmentations that preserve the task's semantics.", "Inspect examples and labels before trusting aggregate metrics."]
+        },
+        {
+          "title": "Measure localization carefully",
+          "paragraphs": ["Intersection over Union (IoU) compares the overlap of predicted and ground-truth boxes or masks to their union. Detection metrics combine localization and classification quality across confidence thresholds.", "For imbalanced segmentation, report per-class and overlap-based metrics alongside pixel accuracy. A high average can conceal poor performance on rare or important categories."]
+        }
+      ],
+      "example": {"description": "Calculate bounding-box overlap", "code": "intersection = 30\nunion = 60\niou = intersection / union\nprint(f\"Intersection over Union: {iou:.2f}\")"},
+      "exercise": {"prompt": "Calculate intersection over union and store the ratio in iou.", "starter": "intersection = 30\nunion = 60\n# Calculate intersection / union\niou = 0\nprint(iou)", "tests": "assert abs(iou - 0.5) < 1e-9", "hint": "Divide intersection by union.", "solution": "iou = intersection / union"},
+      "quiz": {"prompt": "Which task predicts a location as well as a class for each detected object?", "choices": ["Object detection.", "Image classification.", "Text generation."], "answer": 0, "explanation": "Object detection predicts object classes and their locations, usually as bounding boxes."}
+    },
+    {
+      "part": "VI",
+      "title": "Natural Language Processing",
+      "chapter": "Natural Language Processing and Transformers",
+      "minutes": 40,
+      "summary": "Follow the path from tokenization and embeddings to transformers, LLMs, and retrieval.",
+      "objective": "Explain self-attention and retrieval-augmented generation in modern NLP systems.",
+      "sections": [
+        {
+          "title": "Represent language for computation",
+          "paragraphs": ["Text normalization and tokenization convert strings into units a model can process. Tokenizers may split words into subwords; the resulting identifiers are not words themselves.", "TF-IDF represents a document using weighted term counts. Embeddings map tokens or passages into vectors whose geometry can encode useful relationships, though embedding similarity is not a guarantee of truth or relevance."],
+          "bullets": ["Tokenization affects sequence length and vocabulary coverage.", "Keep document boundaries and source metadata for retrieval.", "Evaluate preprocessing on examples from the target domain."]
+        },
+        {
+          "title": "Attention and retrieval",
+          "paragraphs": ["Self-attention computes context-sensitive interactions among tokens using queries, keys, and values. Positional information helps a transformer distinguish token order; multiple layers build increasingly contextual representations.", "Retrieval-augmented generation retrieves candidate passages and adds them to a model's context. Good retrieval, source attribution, and answer evaluation are separate requirements; citations should be checked against the retrieved evidence."]
+        }
+      ],
+      "example": {"description": "Tokenize a short sentence", "code": "sentence = \"attention helps models focus on relevant words\"\ntokens = sentence.lower().split()\nprint(f\"Token count: {len(tokens)}\")\nprint(tokens)"},
+      "exercise": {"prompt": "Normalize the sentence to lowercase, split it into tokens, and store them in tokens.", "starter": "sentence = \"Attention helps models focus on relevant words\"\n# Normalize and split the sentence\ntokens = []\nprint(tokens)", "tests": "assert tokens == [\"attention\", \"helps\", \"models\", \"focus\", \"on\", \"relevant\", \"words\"]", "hint": "Chain .lower() and .split().", "solution": "tokens = sentence.lower().split()"},
+      "quiz": {"prompt": "What information does self-attention use to compute contextual interactions?", "choices": ["Queries, keys, and values.", "Only a document's word count.", "A database password."], "answer": 0, "explanation": "The attention mechanism compares queries and keys to weight a combination of values."}
+    },
+    {
+      "part": "VII",
+      "title": "Generative AI",
+      "chapter": "Generative AI",
+      "minutes": 35,
+      "summary": "Compare generative approaches and learn how conditioning and evaluation shape outputs.",
+      "objective": "Describe generative modeling and distinguish common families of generative systems.",
+      "sections": [
+        {
+          "title": "Model a distribution, create a sample",
+          "paragraphs": ["A discriminative model estimates a decision or conditional relationship useful for predicting labels. A generative model learns a distribution that can be sampled or used to model how data could have arisen.", "Autoregressive models predict a next token or element; GANs train a generator against a discriminator; diffusion models learn to reverse a gradual corruption process. These approaches have different training objectives and failure modes."],
+          "bullets": ["Generation quality depends on prompts, conditioning, and sampling.", "A plausible output may still be inaccurate or unsafe.", "Evaluate diversity, quality, and task-specific constraints."]
+        },
+        {
+          "title": "Prompt with a purpose",
+          "paragraphs": ["A useful prompt states the task, context, constraints, and desired response format. Examples can clarify a pattern, but prompt changes should be tested across representative inputs rather than a single showcase.", "For consequential outputs, add verification steps and communicate uncertainty. Generation parameters change sampling behavior; they do not make a model's claims factually grounded."]
+        }
+      ],
+      "example": {"description": "Select a continuation based on a simple score", "code": "candidates = {\"blue\": 0.6, \"green\": 0.3, \"red\": 0.1}\nnext_token = max(candidates, key=candidates.get)\nprint(f\"Most likely next token: {next_token}\")"},
+      "exercise": {"prompt": "Select the candidate with the highest probability and store its name in next_token.", "starter": "candidates = {\"blue\": 0.6, \"green\": 0.3, \"red\": 0.1}\n# Select the key with the highest value\nnext_token = \"\"\nprint(next_token)", "tests": "assert next_token == \"blue\"", "hint": "Use max(candidates, key=candidates.get).", "solution": "next_token = max(candidates, key=candidates.get)"},
+      "quiz": {"prompt": "What does an autoregressive language model typically predict?", "choices": ["A next token conditioned on previous tokens.", "A full verified source document.", "The cause of every observed relationship."], "answer": 0, "explanation": "Autoregressive models predict the next token given the preceding context."}
+    },
+    {
+      "part": "VIII",
+      "title": "AI Agents",
+      "chapter": "AI Agents and Agentic AI",
+      "minutes": 30,
+      "summary": "Understand tool use, memory, planning, and the limits of agentic systems.",
+      "objective": "Identify the core components of an agent and the role of tools, memory, and feedback.",
+      "sections": [
+        {
+          "title": "An agent acts in a loop",
+          "paragraphs": ["An AI agent observes a context, chooses an action, and uses feedback to continue toward a goal. A language model may propose actions, while a controller decides which tools are actually available and validates their arguments.", "Tools can search, calculate, or access an application. Memory can preserve information between steps, but stored context may be stale, irrelevant, or sensitive."],
+          "bullets": ["Limit tool permissions to the task.", "Validate action arguments and results.", "Set step, time, and resource budgets."]
+        },
+        {
+          "title": "Plan, observe, and stop",
+          "paragraphs": ["Planning decomposes a broad request into smaller actions; execution should check whether each action achieved its intended result. A useful agent has explicit stop conditions and a human escalation path for ambiguous or high-impact choices.", "Multi-agent designs add communication and coordination costs. Compare them to a simpler single-agent or scripted baseline, and evaluate task completion, tool errors, latency, and safety."]
+        }
+      ],
+      "example": {"description": "Read a tool result before responding", "code": "tool_results = {\"search\": \"Three useful papers found\"}\nresponse = f\"Search result: {tool_results['search']}\"\nprint(response)"},
+      "exercise": {"prompt": "Use the search tool result to construct a response and store it in response.", "starter": "tool_results = {\"search\": \"Three useful papers found\"}\n# Include the search result in a response\nresponse = \"\"\nprint(response)", "tests": "assert \"Three useful papers found\" in response", "hint": "Read tool_results[\"search\"] and include it in a string.", "solution": "response = f\"Search result: {tool_results['search']}\""},
+      "quiz": {"prompt": "What makes a tool-using agent safer and more reliable?", "choices": ["Validate tool inputs and outputs, limit permissions, and define stop conditions.", "Allow every tool unrestricted access.", "Retry forever when a tool fails."], "answer": 0, "explanation": "Bounded permissions, validation, and explicit stopping reduce the impact of mistakes and runaway action loops."}
+    },
+    {
+      "part": "IX",
+      "title": "Python for Researchers",
+      "chapter": "Python for AI Researchers",
+      "minutes": 25,
+      "summary": "Get oriented in the Python tools used for data, modeling, visualization, and reproducibility.",
+      "objective": "Match common research tasks to Python tools and write clear, reproducible code.",
+      "sections": [
+        {
+          "title": "Use the scientific Python toolkit",
+          "paragraphs": ["NumPy provides array operations; pandas provides labeled tabular data; Matplotlib and Seaborn help visualize; scikit-learn offers estimators, preprocessing, and evaluation utilities. PyTorch and TensorFlow provide deep-learning frameworks.", "A virtual environment isolates project dependencies. Record package versions and random seeds, and prefer small functions with clear inputs and outputs over opaque notebook state."],
+          "bullets": ["Separate data loading, preprocessing, training, and evaluation.", "Use a pipeline to keep transformations with the estimator.", "Save configuration and environment details with results."]
+        },
+        {
+          "title": "Make experiments rerunnable",
+          "paragraphs": ["A notebook is helpful for exploration, but a reusable script or tested function makes repeated runs easier. Avoid hidden state, fixed machine paths, and manual steps that are not recorded.", "A random seed improves repeatability but cannot guarantee identical results across hardware, libraries, or nondeterministic operations."]
+        }
+      ],
+      "example": {"description": "Use a standard-library function", "code": "import math\nvalues = [1, 4, 9]\nroots = [math.sqrt(value) for value in values]\nprint(roots)"},
+      "exercise": {"prompt": "Import math and compute the square root of each value in values.", "starter": "import math\nvalues = [1, 4, 9]\n# Build a list named roots using math.sqrt\nroots = []\nprint(roots)", "tests": "assert roots == [1.0, 2.0, 3.0]", "hint": "Use a list comprehension: [math.sqrt(value) for value in values].", "solution": "roots = [math.sqrt(value) for value in values]"},
+      "quiz": {"prompt": "Why use a virtual environment for a research project?", "choices": ["To isolate and record project dependencies.", "To make a model automatically more accurate.", "To eliminate the need to document data."], "answer": 0, "explanation": "Virtual environments help keep project dependencies separate and easier to reproduce."}
+    },
+    {
+      "part": "X",
+      "title": "Data & Evaluation",
+      "chapter": "Data Preprocessing and Model Evaluation",
+      "minutes": 35,
+      "summary": "Prepare trustworthy datasets and evaluate models with metrics that match the question.",
+      "objective": "Explain how leakage, class imbalance, and metric choice can distort model evaluation.",
+      "sections": [
+        {
+          "title": "Preprocessing is part of the model",
+          "paragraphs": ["Missing values, outliers, and categorical variables require decisions grounded in the data and task. Scaling affects distance-based and gradient-based methods; tree-based methods often need it less.", "Fit preprocessing on training data inside each validation fold. Resampling methods such as SMOTE belong only within training folds; applying them before splitting can leak information."],
+          "bullets": ["Inspect missingness and class proportions.", "Use group-aware or time-aware splits when samples are dependent.", "Document every transformation and its fit data."]
+        },
+        {
+          "title": "Metrics answer different questions",
+          "paragraphs": ["Precision measures how many predicted positives are correct; recall measures how many actual positives were found. F1 combines them with a harmonic mean; ROC and precision-recall curves show behavior across thresholds.", "Choose thresholds and metrics from the application costs, not from whichever score looks best. Report uncertainty and compare against a meaningful baseline."]
+        }
+      ],
+      "example": {"description": "Compute the F1 score from counts", "code": "true_positive = 8\nfalse_positive = 2\nfalse_negative = 2\nprecision = true_positive / (true_positive + false_positive)\nrecall = true_positive / (true_positive + false_negative)\nf1 = 2 * precision * recall / (precision + recall)\nprint(f\"F1: {f1:.2f}\")"},
+      "exercise": {"prompt": "Compute precision, recall, and F1 using the provided counts.", "starter": "true_positive = 8\nfalse_positive = 2\nfalse_negative = 2\nprecision = true_positive / (true_positive + false_positive)\nrecall = true_positive / (true_positive + false_negative)\n# Calculate the harmonic mean of precision and recall\nf1 = 0\nprint(f1)", "tests": "assert abs(f1 - 0.8) < 1e-9", "hint": "F1 = 2 * precision * recall / (precision + recall).", "solution": "f1 = 2 * precision * recall / (precision + recall)"},
+      "quiz": {"prompt": "Where should a transformation such as scaling be fitted?", "choices": ["On training data only, then applied to validation and test data.", "On the full dataset before splitting.", "Only on the final test set."], "answer": 0, "explanation": "Fitting preprocessing on all data leaks information from held-out examples into the training process."}
+    },
+    {
+      "part": "XI",
+      "title": "LLM Parameters",
+      "chapter": "LLM Parameters and Prompt Engineering",
+      "minutes": 25,
+      "summary": "Understand how sampling parameters and prompt structure shape language-model responses.",
+      "objective": "Predict how temperature, top-p, token limits, and prompt design affect generation.",
+      "sections": [
+        {
+          "title": "Sampling controls",
+          "paragraphs": ["Temperature rescales logits before sampling: lower values concentrate probability around high-scoring tokens, while higher values tend to make sampling less concentrated. Top-p restricts sampling to a probability-mass nucleus.", "A token limit controls output length, not factual reliability. Stop sequences, frequency penalties, and presence penalties affect generation behavior and should be tested with the model and task at hand."],
+          "bullets": ["Greedy decoding is not the same as a low but nonzero temperature.", "Sampling parameters interact with the prompt and model.", "Record settings when comparing outputs."]
+        },
+        {
+          "title": "Prompt with structure",
+          "paragraphs": ["State the goal, relevant context, constraints, and expected format. Few-shot examples can demonstrate a pattern; system instructions can establish the model's role and boundaries.", "Chain-of-thought requests do not guarantee correct reasoning. Check outputs against evidence, especially when they include calculations, citations, or consequential advice."]
+        }
+      ],
+      "example": {"description": "Scale logits by temperature", "code": "logits = [2.0, 1.0, 0.0]\ntemperature = 2.0\nscaled_logits = [value / temperature for value in logits]\nprint(scaled_logits)"},
+      "exercise": {"prompt": "Divide each logit by temperature and store the result in scaled_logits.", "starter": "logits = [2.0, 1.0, 0.0]\ntemperature = 2.0\n# Scale each logit by temperature\nscaled_logits = []\nprint(scaled_logits)", "tests": "assert scaled_logits == [1.0, 0.5, 0.0]", "hint": "Use [value / temperature for value in logits].", "solution": "scaled_logits = [value / temperature for value in logits]"},
+      "quiz": {"prompt": "What does increasing temperature generally do during sampling?", "choices": ["Makes the sampling distribution less concentrated.", "Guarantees more truthful answers.", "Increases the model's training data."], "answer": 0, "explanation": "Higher temperature generally flattens the sampling distribution. It does not improve factual grounding."}
+    },
+    {
+      "part": "XII",
+      "title": "Advanced AI",
+      "chapter": "Advanced AI Concepts",
+      "minutes": 35,
+      "summary": "Consider hallucinations, continual learning, alignment, and safety in advanced systems.",
+      "objective": "Recognize key challenges in alignment, AI safety, and continual learning.",
+      "sections": [
+        {
+          "title": "Reliability is multidimensional",
+          "paragraphs": ["A hallucination is an output unsupported by evidence or inconsistent with the relevant facts. Retrieval and constrained generation can help, but neither guarantees that a model will use evidence correctly.", "Continual learning updates a model over time while trying to retain earlier capabilities. Catastrophic forgetting can occur when learning new tasks disrupts prior knowledge; replay, regularization, and modular approaches address different trade-offs."],
+          "bullets": ["Test behavior under distribution shift.", "Measure harmful failure modes, not only average performance.", "Communicate uncertainty and known limits."]
+        },
+        {
+          "title": "Alignment and safety require evaluation",
+          "paragraphs": ["Alignment work studies whether model behavior follows intended goals and constraints. Human feedback, preference modeling, and reinforcement-learning techniques are among several approaches, each with limitations.", "Safety evaluation combines threat modeling, representative tests, monitoring, and incident response. A benchmark score is evidence about a test set, not a complete safety guarantee."]
+        }
+      ],
+      "example": {"description": "Check whether a response is supported by evidence", "code": "claim = {\"text\": \"The result improved\", \"supported_by_source\": True}\nif claim[\"supported_by_source\"]:\n    print(\"Report the claim with its source.\")\nelse:\n    print(\"Do not present the claim as verified.\")"},
+      "exercise": {"prompt": "Set report_as_verified to True only when the claim is supported by a source.", "starter": "claim = {\"text\": \"The result improved\", \"supported_by_source\": True}\n# Copy the evidence status into report_as_verified\nreport_as_verified = False\nprint(report_as_verified)", "tests": "assert report_as_verified is True", "hint": "Read claim[\"supported_by_source\"].", "solution": "report_as_verified = claim[\"supported_by_source\"]"},
+      "quiz": {"prompt": "What does adding retrieval to a language model guarantee?", "choices": ["Nothing by itself; retrieved evidence and the answer still need evaluation.", "That every response is factually correct.", "That all hallucinations are eliminated."], "answer": 0, "explanation": "Retrieval may provide useful evidence, but retrieval quality, evidence use, and generated claims must still be checked."}
+    },
+    {
+      "part": "XIII",
+      "title": "Research Methodology",
+      "chapter": "Research Methodology",
+      "minutes": 40,
+      "summary": "Turn a research gap into a rigorous experiment with reproducible evidence.",
+      "objective": "Translate a research question into a testable hypothesis and a reproducible evaluation plan.",
+      "sections": [
+        {
+          "title": "From interest to a research question",
+          "paragraphs": ["Start with a broad area, identify a specific problem, and read existing work systematically. A research gap is a well-supported reason existing evidence does not answer the question; novelty is not the same as importance.", "Make the question precise and feasible given data access, compute, time, ethics, and expertise. Define the target population and what evidence could support or falsify the claim."],
+          "bullets": ["State the question before choosing the method.", "Write hypotheses that imply measurable outcomes.", "Use baselines and ablations to understand what drives results."]
+        },
+        {
+          "title": "Design a valid experiment",
+          "paragraphs": ["Separate training, validation, and test data. Use cross-validation or repeated experiments where appropriate, and avoid looking at test results during model selection.", "Statistical tests and confidence intervals help characterize uncertainty; they do not replace sound study design. Report effect sizes, assumptions, limitations, random seeds, and enough implementation detail for reproducibility."]
+        }
+      ],
+      "example": {"description": "Check a train-validation-test split", "code": "train_percent = 60\nvalidation_percent = 20\ntest_percent = 20\ntotal = train_percent + validation_percent + test_percent\nprint(f\"Split totals: {total}%\")\nprint(f\"Held-out test share: {test_percent}%\")"},
+      "exercise": {"prompt": "Verify that your train, validation, and test percentages sum to 100.", "starter": "train_percent = 60\nvalidation_percent = 20\ntest_percent = 20\n# Add the split percentages\nsplit_total = 0\nprint(split_total)", "tests": "assert split_total == 100", "hint": "Add the three percentages.", "solution": "split_total = train_percent + validation_percent + test_percent"},
+      "quiz": {"prompt": "When should researchers choose their evaluation protocol?", "choices": ["Before inspecting final test-set results.", "After repeatedly optimizing to the test score.", "Only after writing the abstract."], "answer": 0, "explanation": "Choosing the evaluation protocol before examining test results protects the test set from becoming part of model selection."}
+    },
+    {
+      "part": "XIV",
+      "title": "Publishing",
+      "chapter": "Publishing Research Papers",
+      "minutes": 30,
+      "summary": "Shape findings into a paper, choose a venue, and prepare a responsible submission.",
+      "objective": "Outline a paper and use venue fit and a submission checklist to prepare a manuscript.",
+      "sections": [
+        {
+          "title": "Build a clear research narrative",
+          "paragraphs": ["A research paper connects a problem, a gap, a method, evidence, and a bounded claim. Common sections include an abstract, introduction, related work, methodology, results, discussion, and references.", "A strong abstract briefly explains the problem, approach, key result, and contribution without claiming more than the evidence supports. The methodology should be detailed enough to evaluate and reproduce the work."],
+          "bullets": ["Use tables and figures to answer specific questions.", "Report negative and mixed findings honestly.", "Describe limitations, data provenance, and ethical considerations."]
+        },
+        {
+          "title": "Choose a venue and submit carefully",
+          "paragraphs": ["Venue selection depends on scope, audience, review process, deadlines, format, and publication policies. Verify official calls for papers and current requirements rather than relying on outdated lists.", "Before submission, check author instructions, anonymization, references, supplementary material, reproducibility statements, and permissions. Respond to reviews point by point and distinguish changes from disagreements."]
+        }
+      ],
+      "example": {"description": "Check a paper outline", "code": "paper_sections = [\"abstract\", \"introduction\", \"method\", \"results\", \"discussion\"]\nmissing = []\nfor section in paper_sections:\n    print(f\"✓ {section.title()}\")\nprint(f\"Sections in outline: {len(paper_sections)}\")"},
+      "exercise": {"prompt": "Use the required_sections list to produce a list called present_sections containing the required headings.", "starter": "required_sections = [\"abstract\", \"introduction\", \"method\", \"results\", \"discussion\"]\n# Copy the required sections into present_sections\npresent_sections = []\nprint(present_sections)", "tests": "assert set(required_sections).issubset(set(present_sections))", "hint": "Copy the list with present_sections = required_sections.copy().", "solution": "present_sections = required_sections.copy()"},
+      "quiz": {"prompt": "What should an abstract's claims reflect?", "choices": ["The evidence and limitations of the study.", "The strongest possible interpretation, regardless of evidence.", "The full literature review."], "answer": 0, "explanation": "An abstract should accurately summarize the study and keep its claims within the evidence."}
+    }
+  ]
+}

@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f7f2">
+    <title>NeuroVerse AI ML Learning Hub</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Course navigation">
+        <a class="brand" href="#" aria-label="NeuroVerse AI ML Learning Hub home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none">
+              <ellipse cx="24" cy="24" rx="19" ry="8.2" transform="rotate(-31 24 24)" stroke="currentColor" stroke-width="1.4"/>
+              <ellipse cx="24" cy="24" rx="19" ry="8.2" transform="rotate(54 24 24)" stroke="currentColor" stroke-width="1.2" opacity=".85"/>
+              <path d="M11 14.5 36.5 33M13 34 34 12M9 25l29-1" stroke="currentColor" stroke-width="1" opacity=".65"/>
+              <circle cx="24" cy="24" r="5.2" fill="currentColor"/>
+              <circle cx="10" cy="17" r="2.5" fill="#20a5d6"/><circle cx="38" cy="29" r="2.5" fill="#20a5d6"/>
+              <circle cx="16" cy="35" r="2" fill="#20a5d6"/><circle cx="32" cy="12" r="2" fill="#20a5d6"/>
+              <circle cx="10" cy="25" r="1.8" fill="#6450a5"/><circle cx="36" cy="18" r="1.8" fill="#6450a5"/>
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <strong>NeuroVerse <span>AI ML</span></strong>
+            <small>LEARNING HUB</small>
+          </span>
+        </a>
+
+        <div class="sidebar-label course-picker-label">CHOOSE A COURSE</div>
+        <div class="course-switch" id="course-switch" role="group" aria-label="Choose a course">
+          <button class="course-option is-active" type="button" data-course="handbook"><strong>AI Researcher’s Handbook</strong><small>14 parts · research pathway</small></button>
+          <button class="course-option" type="button" data-course="beginner"><strong>Python → Machine Learning</strong><small>14 weeks · beginner pathway</small></button>
+        </div>
+        <div class="sidebar-label" id="course-pathway-label">YOUR LEARNING PATH</div>
+        <div class="track-switch" id="track-switch" role="group" aria-label="Choose a reading pathway">
+          <button class="track-option is-active" type="button" data-track="practitioner">Practitioner</button>
+          <button class="track-option" type="button" data-track="frontier">Frontier</button>
+        </div>
+        <button class="library-launch" id="library-open" type="button"><span aria-hidden="true">▤</span><span><strong>Study library</strong><small>Glossary · projects · research toolkit</small></span><span class="library-arrow" aria-hidden="true">↗</span></button>
+
+        <div class="sidebar-label chapter-label">
+          <span id="course-curriculum-label">HANDBOOK CURRICULUM</span>
+          <span id="sidebar-count">0 / 14</span>
+        </div>
+        <nav id="chapter-nav" class="chapter-nav" aria-label="Handbook chapters"></nav>
+
+        <div class="sidebar-bottom">
+          <div class="edition-mark"><span class="edition-dot"></span> A PRODUCT OF NEUROVERSE</div>
+          <p>NeuroVerse Research Lab<br><em>Neural and Universal Intelligence Research Laboratory</em></p>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <div class="breadcrumbs"><span>My learning</span><span class="crumb-slash">/</span><strong id="breadcrumb-current">Overview</strong></div>
+          <div class="topbar-right">
+            <div class="streak-pill" id="streak-pill" title="Daily Learning Streak & XP">
+              <span class="streak-flame">🔥</span> <strong id="streak-count">1</strong>d
+              <span class="xp-divider">·</span>
+              <span class="xp-badge"><strong id="xp-count">50</strong> XP</span>
+            </div>
+            <button class="topbar-action-btn" id="onboarding-open" type="button" title="Diagnostic Assessment"><span aria-hidden="true">🧭</span> Start Here</button>
+            <button class="topbar-action-btn" id="sandbox-open" type="button" title="Open Interactive Python Sandbox"><span aria-hidden="true">⚡</span> Sandbox</button>
+            <button class="topbar-action-btn" id="flashcards-top-btn" type="button" title="Interactive Flashcards Deck"><span aria-hidden="true">🎴</span> Flashcards</button>
+            <button class="topbar-action-btn" id="certificate-open" type="button" title="View or Claim Certificate"><span aria-hidden="true">🏆</span> Certificate</button>
+            <label class="search-field"><span aria-hidden="true">⌕</span><input id="course-search" type="search" placeholder="Search lessons" aria-label="Search lessons"></label>
+            <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"><span id="theme-symbol" aria-hidden="true">☾</span></button>
+            <span class="saved-label" id="sync-status"><span class="saved-dot"></span> Sign in to sync progress</span>
+            <button class="button button-account" id="auth-open" type="button">Sign in</button>
+            <div class="avatar" id="avatar" aria-label="Guest profile">G</div>
+          </div>
+        </header>
+
+        <section id="dashboard-view" class="dashboard-view">
+          <div class="welcome-row">
+            <div>
+              <p class="eyebrow"><span class="eyebrow-line"></span> YOUR RESEARCH JOURNEY</p>
+              <h1>Good research starts<br>with a <em>good question.</em></h1>
+              <p class="welcome-copy">Build the skills to move from machine learning foundations to your first research submission.</p>
+            </div>
+            <div class="hero-stamp" aria-label="Fourteen parts, one research journey">
+              <span>14</span>
+              <small>PARTS<br>ONE JOURNEY</small>
+              <svg viewBox="0 0 150 150" aria-hidden="true">
+                <circle cx="75" cy="75" r="56" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 5"></circle>
+                <circle cx="75" cy="75" r="40" fill="none" stroke="currentColor" stroke-width="1"></circle>
+                <path d="M75 19v112M19 75h112M35 35l80 80M115 35l-80 80" stroke="currentColor" stroke-width=".7" opacity=".6"></path>
+                <circle cx="75" cy="75" r="5" fill="currentColor"></circle>
+              </svg>
+            </div>
+          </div>
+
+          <section class="institution-panel" aria-label="About NeuroVerse Research Lab">
+            <div class="institution-brand">
+              <img class="lab-logo" src="./assets/neuroverse-lab-logo.jpg" alt="NeuroVerse Lab — Neural and Universal Intelligence Research Laboratory">
+              <span class="institution-kicker">A PRODUCT OF NEUROVERSE RESEARCH LAB</span>
+              <h2>Research-led learning.<br><em>Human-centered AI.</em></h2>
+              <p>NeuroVerse AI/ML Learning Hub makes AI and machine-learning education practical, rigorous, and connected to real research.</p>
+            </div>
+            <div class="institution-statement">
+              <span class="statement-label"><span class="statement-icon">✳</span> OUR MISSION</span>
+              <p>To advance the frontiers of machine learning and socio-economic intelligence through interdisciplinary research that unites data, cognition, and society—building adaptive systems that learn, reason, and empower human progress.</p>
+            </div>
+            <div class="institution-statement vision-statement">
+              <span class="statement-label"><span class="statement-icon">↗</span> OUR VISION</span>
+              <p>To become a global leader in human-centered AI innovation, bridging the gap between artificial intelligence, social impact, and sustainable technological growth.</p>
+            </div>
+          </section>
+
+          <section class="diagnostic-banner" aria-label="Personalized Learning Path Finder">
+            <div class="diagnostic-copy">
+              <span class="diagnostic-tag">🎯 PERSONALIZED LEARNING ADVISOR</span>
+              <h2>Not sure where to begin? Take the 30-second Path Finder</h2>
+              <p>Whether you're brand-new to programming, an applied data practitioner, or preparing for frontier academic research, our diagnostic quiz matches you to the perfect curriculum.</p>
+            </div>
+            <button class="button button-dark diagnostic-launch-btn" id="hero-pathfinder-btn" type="button">Find My Path ↗</button>
+          </section>
+
+          <div class="dashboard-grid">
+            <section class="primary-column">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">PICK UP WHERE YOU LEFT OFF</p>
+                  <h2>Your learning path</h2>
+                </div>
+                <span class="pathway-pill" id="pathway-pill">PRACTITIONER PATHWAY</span>
+              </div>
+
+              <article class="continue-card">
+                <div class="continue-meta"><span class="continue-kicker">UP NEXT</span><span id="continue-part">PART II · MACHINE LEARNING</span></div>
+                <h3 id="continue-title">Traditional Machine Learning Models</h3>
+                <p id="continue-description">Compare seven classic models and learn what makes a fair evaluation.</p>
+                <div class="continue-footer">
+                  <div class="lesson-meta"><span class="clock-icon" aria-hidden="true">◷</span><span id="continue-duration">35 min</span><span class="meta-divider"></span><span>Code lab included</span></div>
+                  <button class="button button-dark" id="continue-button" type="button">Continue learning <span aria-hidden="true">↗</span></button>
+                </div>
+                <div class="continue-decoration" aria-hidden="true"><span>02</span><span>FIELD NOTES</span></div>
+              </article>
+
+              <div class="section-heading modules-heading">
+                <div>
+                  <p class="eyebrow">THE COMPLETE HANDBOOK</p>
+                  <h2>Explore all 14 parts</h2>
+                </div>
+                <span class="muted-small">Follow your pathway or choose any part</span>
+              </div>
+              <div id="module-grid" class="module-grid"></div>
+            </section>
+
+            <aside class="right-column">
+              <section class="progress-card">
+                <div class="card-heading">
+                  <div><p class="eyebrow">A LITTLE EVERY DAY</p><h3>Your progress</h3></div>
+                  <span class="progress-icon" aria-hidden="true">↗</span>
+                </div>
+                <div class="progress-number"><strong id="progress-percent">0%</strong><span id="progress-caption">of the handbook</span></div>
+                <div class="progress-track"><span id="progress-bar"></span></div>
+                <div class="progress-foot"><span id="completed-count">0 parts complete</span><span>14 parts</span></div>
+                <div class="progress-divider"></div>
+                <p class="progress-note"><span class="sparkle" aria-hidden="true">✳</span> Your next milestone: complete your first part.</p>
+              </section>
+
+              <section class="research-card">
+                <div class="research-card-top"><span class="research-tag">THE BIG PICTURE</span><span class="arrow-circle" aria-hidden="true">↗</span></div>
+                <div class="research-illustration" aria-hidden="true">
+                  <span class="orbit orbit-one"></span><span class="orbit orbit-two"></span>
+                  <span class="orbit-node node-one"></span><span class="orbit-node node-two"></span>
+                  <span class="orbit-node node-three"></span><span class="orbit-core">?</span>
+                </div>
+                <h3>From curiosity<br>to contribution.</h3>
+                <p>Learn the full research cycle: ask a question, test it rigorously, and share what you discover.</p>
+                <button class="text-button" type="button" data-open-module="13">Preview research methodology <span aria-hidden="true">→</span></button>
+              </section>
+
+              <section class="badges-card">
+                <div class="card-heading">
+                  <div><p class="eyebrow">MILESTONES & RIGOR</p><h3>Achievement badges</h3></div>
+                  <span class="badge-total-pill" id="badge-total-count">0 / 8</span>
+                </div>
+                <div class="badges-grid" id="badges-grid"></div>
+              </section>
+
+              <div class="quote-card">
+                <span class="quote-mark" aria-hidden="true">“</span>
+                <blockquote>A model is only as good as the question it helps us answer.</blockquote>
+                <span class="quote-attribution">A RESEARCHER'S REMINDER</span>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="lesson-view" class="lesson-view" hidden>
+          <div class="lesson-toolbar">
+            <button id="back-button" class="back-button" type="button"><span aria-hidden="true">←</span> All parts</button>
+            <span id="lesson-pathway" class="pathway-pill">PRACTITIONER PATHWAY</span>
+          </div>
+          <div id="lesson-content"></div>
+        </section>
+        <footer class="app-footer global-footer">
+          <span>NEUROVERSE AI ML LEARNING HUB · A PRODUCT OF NEUROVERSE RESEARCH LAB</span>
+          <span><button class="footer-about" type="button" id="about-open">ABOUT US</button> &nbsp; · &nbsp; LEARN WITH RIGOR. BUILD WITH PURPOSE.</span>
+        </footer>
+      </main>
+    </div>
+    <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+      <form class="auth-form" id="auth-form">
+        <button class="dialog-close" id="auth-close" type="button" aria-label="Close sign in dialog">×</button>
+        <p class="eyebrow">YOUR RESEARCH JOURNEY</p>
+        <h2 id="auth-title">Welcome back.</h2>
+        <p class="auth-description" id="auth-description">Sign in to sync your learning progress across sessions.</p>
+        <label id="name-field" hidden>Your name<input name="name" autocomplete="name" maxlength="80"></label>
+        <label>Email address<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" minlength="10" maxlength="256" required></label>
+        <p class="auth-error" id="auth-error" role="alert"></p>
+        <button class="button button-dark auth-submit" id="auth-submit" type="submit">Sign in</button>
+        <p class="auth-switch" id="auth-switch-copy">New here? <button type="button" id="auth-switch">Create an account</button></p>
+        <p class="auth-local-note">Accounts and learning progress are stored in this local installation.</p>
+      </form>
+    </dialog>
+    <dialog class="about-dialog" id="about-dialog" aria-labelledby="about-title">
+      <button class="dialog-close" id="about-close" type="button" aria-label="Close about panel">×</button>
+      <p class="eyebrow">ABOUT THE LAB</p>
+      <img class="about-logo" src="./assets/neuroverse-lab-logo.jpg" alt="NeuroVerse Lab — Neural and Universal Intelligence Research Laboratory">
+      <h2 id="about-title">NeuroVerse Research Lab</h2>
+      <p class="about-subtitle">Neural and Universal Intelligence Research Laboratory</p>
+      <p>NeuroVerse AI ML Learning Hub is a product of NeuroVerse Research Lab. We connect interdisciplinary research with practical learning to help more people understand, build, and evaluate intelligent systems.</p>
+      <div class="about-statements">
+        <section><span class="statement-label">OUR MISSION</span><p>To advance the frontiers of machine learning and socio-economic intelligence through interdisciplinary research that unites data, cognition, and society, building adaptive systems that learn, reason, and empower human progress.</p></section>
+        <section><span class="statement-label">OUR VISION</span><p>To become a global leader in human-centered AI innovation, bridging the gap between artificial intelligence, social impact, and sustainable technological growth.</p></section>
+      </div>
+      <button class="button button-dark about-done" id="about-done" type="button">Back to learning</button>
+    </dialog>
+    <dialog class="library-dialog" id="library-dialog" aria-labelledby="library-title">
+      <header class="library-header">
+        <div><p class="eyebrow">EVERYTHING IN ONE PLACE</p><h2 id="library-title">Study library</h2><p>Definitions, formulas, hands-on projects, and research-writing tools included in the course.</p></div>
+        <button class="dialog-close" id="library-close" type="button" aria-label="Close study library">×</button>
+      </header>
+      <nav class="library-tabs" aria-label="Study library sections">
+        <button class="library-tab is-active" type="button" data-library-tab="glossary" aria-pressed="true">Glossary</button>
+        <button class="library-tab" type="button" data-library-tab="formulas" aria-pressed="false">Formula book</button>
+        <button class="library-tab" type="button" data-library-tab="flashcards" aria-pressed="false">🎴 Flashcards</button>
+        <button class="library-tab" type="button" data-library-tab="cheatsheets" aria-pressed="false">📋 Cheat Sheets</button>
+        <button class="library-tab" type="button" data-library-tab="projects" aria-pressed="false">Project workbooks</button>
+        <button class="library-tab" type="button" data-library-tab="toolkit" aria-pressed="false">Research toolkit</button>
+      </nav>
+      <div class="library-tools"><label class="library-search"><span aria-hidden="true">⌕</span><input id="library-search" type="search" placeholder="Search this library" aria-label="Search study library"></label><span id="library-count"></span></div>
+      <section id="library-content" class="library-content" tabindex="0" aria-live="polite"></section>
+    </dialog>
+
+    <dialog class="onboarding-dialog" id="onboarding-dialog" aria-labelledby="onboarding-title">
+      <button class="dialog-close" id="onboarding-close" type="button" aria-label="Close Path Finder">×</button>
+      <div class="onboarding-content">
+        <span class="diagnostic-tag">🧭 30-SECOND DIAGNOSTIC ADVISOR</span>
+        <h2 id="onboarding-title">Find Your Personalized AI Learning Path</h2>
+        <p class="onboarding-subtitle">Answer 3 quick questions to get matched to the ideal curriculum tailored to your background and aspirations.</p>
+        
+        <div class="onboarding-step" id="onboarding-step-1">
+          <p class="step-counter">QUESTION 1 OF 3</p>
+          <h3>What is your current programming & Python background?</h3>
+          <div class="option-cards-group">
+            <button class="choice-card" type="button" data-field="experience" data-value="none">
+              <span class="choice-icon">🌱</span>
+              <div>
+                <strong>Brand new to coding / No Python</strong>
+                <small>I want step-by-step guidance starting from variables and loops.</small>
+              </div>
+            </button>
+            <button class="choice-card" type="button" data-field="experience" data-value="some">
+              <span class="choice-icon">💻</span>
+              <div>
+                <strong>Some Python or programming basics</strong>
+                <small>I know basic syntax and want to build real machine learning models.</small>
+              </div>
+            </button>
+            <button class="choice-card" type="button" data-field="experience" data-value="experienced">
+              <span class="choice-icon">🔬</span>
+              <div>
+                <strong>Experienced coder / Data scientist / Researcher</strong>
+                <small>I want rigorous theoretical depth, transformers, and paper-writing methodology.</small>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="onboarding-step" id="onboarding-step-2" hidden>
+          <p class="step-counter">QUESTION 2 OF 3</p>
+          <h3>What is your primary goal right now?</h3>
+          <div class="option-cards-group">
+            <button class="choice-card" type="button" data-field="goal" data-value="python_ml">
+              <span class="choice-icon">🚀</span>
+              <div>
+                <strong>Master Python & Machine Learning Fundamentals</strong>
+                <small>Go from zero code to training predictive models in 14 structured weeks.</small>
+              </div>
+            </button>
+            <button class="choice-card" type="button" data-field="goal" data-value="practical_models">
+              <span class="choice-icon">⚡</span>
+              <div>
+                <strong>Apply ML to Real Data in Industry</strong>
+                <small>Compare classifiers, prevent data leakage, and deploy reliable pipelines.</small>
+              </div>
+            </button>
+            <button class="choice-card" type="button" data-field="goal" data-value="research">
+              <span class="choice-icon">🎓</span>
+              <div>
+                <strong>Publish AI Research or Advance Academic Frontiers</strong>
+                <small>Formulate hypotheses, design ablations, evaluate LLMs, and write papers.</small>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="onboarding-step" id="onboarding-step-3" hidden>
+          <p class="step-counter">QUESTION 3 OF 3</p>
+          <h3>How much time do you want to invest weekly?</h3>
+          <div class="option-cards-group">
+            <button class="choice-card" type="button" data-field="time" data-value="casual">
+              <span class="choice-icon">⏱️</span>
+              <div>
+                <strong>Bite-sized: 15–20 minutes / day</strong>
+                <small>One short chapter + hands-on Python exercise per session.</small>
+              </div>
+            </button>
+            <button class="choice-card" type="button" data-field="time" data-value="intensive">
+              <span class="choice-icon">🔥</span>
+              <div>
+                <strong>Deep Dive: 3–5 hours / week</strong>
+                <small>Code exercises, interactive visualizer, and project workbooks.</small>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="onboarding-result" id="onboarding-result" hidden>
+          <div class="result-badge">✨ YOUR PERSONALIZED MATCH</div>
+          <h3 id="result-match-title">Python → Machine Learning Pathway</h3>
+          <p id="result-match-desc">Based on your goals, we recommend starting with our 14-week beginner curriculum to build confident coding and intuition before advancing to research papers.</p>
+          <div class="result-actions">
+            <button class="button button-dark" id="onboarding-apply-btn" type="button">Start Learning Now ↗</button>
+            <button class="button button-light" id="onboarding-restart-btn" type="button">Retake Quiz</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="sandbox-dialog" id="sandbox-dialog" aria-labelledby="sandbox-title">
+      <div class="sandbox-header">
+        <div>
+          <span class="eyebrow">INTERACTIVE BROWSER REPL</span>
+          <h2 id="sandbox-title">Python Interactive Sandbox</h2>
+          <p>Run arbitrary Python code directly in your browser with Pyodide. No local setup or installation required.</p>
+        </div>
+        <button class="dialog-close" id="sandbox-close" type="button" aria-label="Close sandbox">×</button>
+      </div>
+      <div class="sandbox-toolbar">
+        <label class="sandbox-template-picker">
+          <span>Preset Template:</span>
+          <select id="sandbox-template-select">
+            <option value="intro">1. Python Basics & Data Structures</option>
+            <option value="math">2. Vector Mathematics & Statistics</option>
+            <option value="classifier">3. Logistic Model Decision Boundary</option>
+            <option value="metrics">4. Confusion Matrix, Precision, Recall, F1</option>
+            <option value="neural">5. Toy Perceptron / Neural Activation</option>
+          </select>
+        </label>
+        <div class="sandbox-actions">
+          <button class="button button-light" id="sandbox-clear-btn" type="button">Clear Console</button>
+          <button class="button button-dark" id="sandbox-run-btn" type="button">▶ Run Code (Ctrl+Enter)</button>
+        </div>
+      </div>
+      <div class="sandbox-body">
+        <div class="sandbox-editor-col">
+          <div class="sandbox-col-head"><span>CODE EDITOR</span><span id="sandbox-status">Pyodide Ready</span></div>
+          <textarea class="code-editor sandbox-textarea" id="sandbox-code-editor" spellcheck="false"></textarea>
+        </div>
+        <div class="sandbox-output-col">
+          <div class="sandbox-col-head"><span>TERMINAL OUTPUT</span><button class="copy-snippet-btn" id="sandbox-copy-btn" type="button">Copy Output</button></div>
+          <pre class="code-output sandbox-output" id="sandbox-output-console" aria-live="polite">(Output will appear here after clicking Run)</pre>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="certificate-dialog" id="certificate-dialog" aria-labelledby="cert-title">
+      <div class="cert-dialog-bar no-print">
+        <div class="cert-bar-info">
+          <span class="sparkle">🏆</span>
+          <strong>NeuroVerse Verified Certificate of Completion</strong>
+        </div>
+        <div class="cert-bar-actions">
+          <button class="button button-dark" id="cert-print-btn" type="button">🖨️ Print / Save PDF</button>
+          <button class="dialog-close" id="certificate-close" type="button" aria-label="Close certificate">×</button>
+        </div>
+      </div>
+      <div class="cert-customizer no-print">
+        <label>
+          <span>Recipient Full Name:</span>
+          <input type="text" id="cert-recipient-input" placeholder="Enter your full name" maxlength="60">
+        </label>
+        <span class="cert-tip">💡 You can customize your name above before printing or saving.</span>
+      </div>
+      <div class="certificate-frame" id="certificate-frame">
+        <div class="cert-border-outer">
+          <div class="cert-border-inner">
+            <div class="cert-watermark" aria-hidden="true">NEUROVERSE</div>
+            <header class="cert-header">
+              <img class="cert-logo" src="./assets/neuroverse-lab-logo.jpg" alt="NeuroVerse Research Lab">
+              <div class="cert-org-details">
+                <span class="cert-org-name">NEUROVERSE RESEARCH LAB</span>
+                <span class="cert-lab-title">NEURAL AND UNIVERSAL INTELLIGENCE RESEARCH LABORATORY</span>
+              </div>
+            </header>
+            
+            <div class="cert-body">
+              <span class="cert-pretitle">ACADEMIC HONORS & PROFESSIONAL ACHIEVEMENT</span>
+              <h1 class="cert-main-title" id="cert-title">Certificate of Completion</h1>
+              <p class="cert-certifies">This is to officially certify that</p>
+              <div class="cert-recipient" id="cert-recipient-name">Learner</div>
+              <p class="cert-statement">has demonstrated outstanding commitment, rigorous discipline, and intellectual mastery in completing the full curriculum of</p>
+              <h2 class="cert-course-name" id="cert-course-name">The AI Researcher's Handbook</h2>
+              <p class="cert-details-text">
+                Encompassing foundational machine learning architectures, statistical model validation, loss landscapes, optimization dynamics, transformer self-attention, and ethical scientific research methodology.
+              </p>
+            </div>
+
+            <footer class="cert-footer">
+              <div class="cert-meta-col">
+                <div class="cert-meta-item">
+                  <span class="cert-meta-label">CREDENTIAL ID</span>
+                  <strong class="cert-meta-value" id="cert-id-value">NV-2026-X79K2</strong>
+                </div>
+                <div class="cert-meta-item">
+                  <span class="cert-meta-label">DATE OF ISSUANCE</span>
+                  <strong class="cert-meta-value" id="cert-date-value">October 18, 2026</strong>
+                </div>
+              </div>
+
+              <div class="cert-seal-col">
+                <div class="cert-seal">
+                  <svg viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="46" stroke="#2e6e52" stroke-width="2" stroke-dasharray="3 3"/>
+                    <circle cx="50" cy="50" r="40" stroke="#2e6e52" stroke-width="1.5"/>
+                    <path d="M50 16 L53 30 L67 30 L56 38 L60 52 L50 43 L40 52 L44 38 L33 30 L47 30 Z" fill="#2e6e52"/>
+                    <circle cx="50" cy="68" r="6" fill="#2e6e52"/>
+                  </svg>
+                  <span class="seal-text">VERIFIED RIGOR</span>
+                </div>
+              </div>
+
+              <div class="cert-sig-col">
+                <div class="cert-signature-line">
+                  <span class="sig-script">Mehedi Hasan</span>
+                </div>
+                <strong class="sig-name">Mehedi Hasan</strong>
+                <span class="sig-role">Author & Director, NeuroVerse Research Lab</span>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast-message" id="toast-message" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

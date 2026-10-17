@@ -1,0 +1,230 @@
+{
+  "title": "Python, Data Science & Machine Learning",
+  "description": "A 14-week, hands-on path from Python fundamentals to an evaluated, shareable machine-learning capstone.",
+  "parts": [
+    {
+      "part": 1,
+      "title": "Python Foundations",
+      "chapter": "Python Fundamentals: Syntax, Data Types & Control Flow",
+      "minutes": 35,
+      "summary": "Write small Python programs with variables, collections, conditions, and loops.",
+      "objective": "Use core Python types and control flow to solve a simple data problem.",
+      "sections": [
+        {"title": "Programs are instructions over data", "paragraphs": ["Python values have types: numbers, text, booleans, and collections. Variables give those values names so a program can transform and inspect them.", "A conditional selects a path; a loop repeats work. Together they make simple data-processing rules explicit and testable."], "bullets": ["Use lists for ordered values and dictionaries for named fields.", "Check edge cases such as empty input and boundary values."]},
+        {"title": "Turn a rule into code", "paragraphs": ["A grade calculator is a small model of a policy: it accepts marks, computes a summary, and applies documented thresholds. Keep the calculation separate from the display."], "bullets": ["State the rule before writing the condition.", "Test values just below, at, and above each threshold."]}
+      ],
+      "visual": {"title": "From values to a Python result", "caption": "INPUT · TRANSFORM · APPLY A RULE · INSPECT THE OUTPUT", "nodes": [{"label": "Input data", "detail": "Marks and records"}, {"label": "Python values", "detail": "Lists · numbers · text"}, {"label": "Control flow", "detail": "Conditions and loops"}, {"label": "Result", "detail": "A checked answer"}]},
+      "example": {"description": "A reusable grade rule", "code": "def grade(mark):\n    if mark >= 80:\n        return \"A\"\n    if mark >= 70:\n        return \"B\"\n    if mark >= 60:\n        return \"C\"\n    return \"Needs review\"\n\nmarks = [78, 91, 64]\naverage = sum(marks) / len(marks)\nprint(f\"Average: {average:.1f}; grade: {grade(average)}\")"},
+      "exercise": {"prompt": "Compute the average of the marks and assign A (80+), B (70+), C (60+), or Needs review.", "starter": "marks = [78, 91, 64]\naverage = sum(marks) / len(marks)\n# Apply the documented grade thresholds\nresult = \"\"", "tests": "assert round(average, 2) == 77.67\nassert result == \"B\"", "hint": "Use if / elif / else and compare average from the highest threshold downward.", "solution": "if average >= 80:\n    result = \"A\"\nelif average >= 70:\n    result = \"B\"\nelif average >= 60:\n    result = \"C\"\nelse:\n    result = \"Needs review\""},
+      "quiz": {"prompt": "Why should a grade rule check the highest threshold first?", "choices": ["A mark meeting a higher threshold also meets lower thresholds.", "Python only supports descending conditions.", "It automatically sorts the marks."], "answer": 0, "explanation": "The first matching branch wins, so checking the broad lower threshold first would mask higher grades."}
+    },
+    {
+      "part": 2,
+      "title": "Functions & Files",
+      "chapter": "Functions, Modules & File Handling",
+      "minutes": 40,
+      "summary": "Organize reusable code and read structured CSV data safely.",
+      "objective": "Write a function that parses records and computes a meaningful summary.",
+      "sections": [
+        {"title": "Functions make work repeatable", "paragraphs": ["A function names a transformation, accepts inputs, and returns a result. Small functions are easier to test than one long script.", "CSV files store rows and columns as text. The csv module handles quoting and delimiters more safely than splitting each line by commas."], "bullets": ["Use explicit parameters and return values.", "Open real files with a context manager so they close reliably."]},
+        {"title": "Keep data and logic separate", "paragraphs": ["A module is a Python file with reusable definitions. A program can import those definitions without copying code."], "bullets": ["Validate missing or malformed fields before calculating.", "Keep file paths configurable rather than hard-coded."]}
+      ],
+      "visual": {"title": "A small data-processing function", "caption": "CSV ROWS BECOME VALIDATED RECORDS AND THEN A SUMMARY", "nodes": [{"label": "CSV text", "detail": "Rows and columns"}, {"label": "Parse", "detail": "Use csv.DictReader"}, {"label": "Validate", "detail": "Check required values"}, {"label": "Summarize", "detail": "Return a result"}]},
+      "example": {"description": "Read CSV rows from text", "code": "import csv\nfrom io import StringIO\n\ntext = \"name,score\\nAmina,84\\nRafi,76\\n\"\nrows = list(csv.DictReader(StringIO(text)))\nscores = [int(row[\"score\"]) for row in rows]\nprint(f\"Students: {len(rows)}; mean: {sum(scores) / len(scores):.1f}\")"},
+      "exercise": {"prompt": "Complete mean_score so it returns the mean of the numeric score values in the supplied CSV text.", "starter": "import csv\nfrom io import StringIO\n\ndef mean_score(csv_text):\n    rows = list(csv.DictReader(StringIO(csv_text)))\n    scores = [int(row[\"score\"]) for row in rows]\n    # Return the mean\n    return 0\n\nsource = \"name,score\\\\nAmina,84\\\\nRafi,76\\\\n\"", "tests": "assert mean_score(source) == 80", "hint": "Return sum(scores) divided by len(scores).", "solution": "return sum(scores) / len(scores)"},
+      "quiz": {"prompt": "What is the main benefit of using csv.DictReader?", "choices": ["It maps each row's fields to their column names.", "It trains a classifier automatically.", "It encrypts the input file."], "answer": 0, "explanation": "DictReader lets you address row values by column name and handles common CSV quoting rules."}
+    },
+    {
+      "part": 3,
+      "title": "Objects & Environments",
+      "chapter": "OOP, Virtual Environments & Package Management",
+      "minutes": 40,
+      "summary": "Model related data and behavior with classes, and learn why projects isolate dependencies.",
+      "objective": "Create a small class and describe how an isolated Python environment supports reproducibility.",
+      "sections": [
+        {"title": "Represent a useful concept", "paragraphs": ["A class defines the data and behavior of a kind of object. An instance stores values for one particular case.", "Use a class when its methods make a coherent operation clearer; ordinary functions and dictionaries remain useful for simple tasks."], "bullets": ["Initialize required fields in __init__.", "Give methods one clear responsibility."]},
+        {"title": "Reproducible project setup", "paragraphs": ["A virtual environment isolates a project's installed packages. A dependency file records what another learner needs to recreate it."], "bullets": ["Use one environment per project.", "Record Python and library versions for research code."]}
+      ],
+      "visual": {"title": "A reproducible Python project", "caption": "SOURCE + DATA + DEPENDENCIES + TESTS", "nodes": [{"label": "Project code", "detail": "Modules and tests"}, {"label": "Environment", "detail": "Isolated packages"}, {"label": "Data", "detail": "Documented inputs"}, {"label": "Run", "detail": "Repeatable result"}]},
+      "example": {"description": "Define a reusable record", "code": "class Student:\n    def __init__(self, name, marks):\n        self.name = name\n        self.marks = marks\n\n    def average(self):\n        return sum(self.marks) / len(self.marks)\n\nstudent = Student(\"Amina\", [84, 90, 78])\nprint(f\"{student.name}: {student.average():.1f}\")"},
+      "exercise": {"prompt": "Implement Student.average so it returns the mean of the student's marks.", "starter": "class Student:\n    def __init__(self, name, marks):\n        self.name = name\n        self.marks = marks\n\n    def average(self):\n        # Return the mean mark\n        return 0\n\nstudent = Student(\"Rafi\", [70, 80, 90])\nresult = student.average()", "tests": "assert result == 80\nassert Student(\"Amina\", [100]).average() == 100", "hint": "Use the instance's self.marks.", "solution": "return sum(self.marks) / len(self.marks)"},
+      "quiz": {"prompt": "Why use a virtual environment for a research project?", "choices": ["To isolate and record project dependencies.", "To make every experiment statistically significant.", "To replace source control."], "answer": 0, "explanation": "Isolated environments reduce dependency conflicts and help others reproduce the setup."}
+    },
+    {
+      "part": 4,
+      "title": "NumPy & Arrays",
+      "chapter": "NumPy: Arrays & Vectorized Operations",
+      "minutes": 40,
+      "summary": "Think in terms of array shape, indexing, and operations over many values.",
+      "objective": "Compute row-wise and column-wise summaries while keeping array dimensions clear.",
+      "sections": [
+        {"title": "Why arrays matter", "paragraphs": ["NumPy arrays store same-typed values in compact, shaped blocks. Vectorized operations express one transformation over many observations without writing an explicit Python loop.", "Shape is part of meaning: a matrix may represent rows as students and columns as assessment scores."], "bullets": ["Inspect shape before applying an operation.", "Distinguish element-wise operations from matrix multiplication."]},
+        {"title": "Practice the operation first", "paragraphs": ["This browser exercise uses Python lists so it runs without installing packages. The same calculations map naturally to NumPy arrays and axis operations in a local notebook."], "bullets": ["Use a tiny example to verify the intended axis.", "Compare a loop result with a vectorized result when learning a library."]}
+      ],
+      "visual": {"title": "Array shape explains the operation", "caption": "ROWS ARE OBSERVATIONS · COLUMNS ARE FEATURES", "nodes": [{"label": "Raw values", "detail": "A rectangular matrix"}, {"label": "Shape", "detail": "Rows × columns"}, {"label": "Axis operation", "detail": "Choose rows or columns"}, {"label": "Summary", "detail": "One result per group"}]},
+      "example": {"description": "Column means using lists", "code": "scores = [[80, 70, 90], [60, 85, 75], [100, 95, 90]]\ncolumn_means = [sum(column) / len(scores) for column in zip(*scores)]\nprint([round(value, 1) for value in column_means])"},
+      "exercise": {"prompt": "Compute the mean of each column in scores and store the three results in column_means.", "starter": "scores = [[80, 70, 90], [60, 85, 75], [100, 95, 90]]\n# Compute a mean for each column\ncolumn_means = []", "tests": "assert column_means == [80, 250 / 3, 85]", "hint": "Use zip(*scores) to iterate over columns.", "solution": "column_means = [sum(column) / len(scores) for column in zip(*scores)]"},
+      "quiz": {"prompt": "In a matrix of rows=students and columns=subjects, what does a column-wise mean summarize?", "choices": ["The average score for each subject.", "The average score for each student.", "The number of missing files."], "answer": 0, "explanation": "A column corresponds to a subject, so reducing down each column yields one subject mean."}
+    },
+    {
+      "part": 5,
+      "title": "Working with Data",
+      "chapter": "Data Manipulation with Pandas",
+      "minutes": 45,
+      "summary": "Inspect, clean, filter, and group tabular data before modeling.",
+      "objective": "Apply explicit cleaning and grouping steps to a small table.",
+      "sections": [
+        {"title": "A table is a data model", "paragraphs": ["A pandas DataFrame labels rows and columns and provides operations for filtering, grouping, merging, and reshaping.", "The browser lab uses dictionaries and lists to teach those operations without a package download. In a local project, the same workflow is commonly expressed with pandas."], "bullets": ["Inspect data types, missingness, and duplicate rows.", "Keep a record of each cleaning decision."]},
+        {"title": "Avoid silent data changes", "paragraphs": ["A missing value is not always zero. Decide whether to remove, impute, or preserve it based on how the value arose and what the analysis needs."], "bullets": ["Check the result after each transformation.", "Do not leak information from held-out data into preprocessing."]}
+      ],
+      "visual": {"title": "A traceable data-cleaning workflow", "caption": "INSPECT BEFORE TRANSFORMING · CHECK EVERY OUTPUT", "nodes": [{"label": "Load", "detail": "Read rows and schema"}, {"label": "Inspect", "detail": "Types · gaps · duplicates"}, {"label": "Clean", "detail": "Document each choice"}, {"label": "Summarize", "detail": "Filter and group"}]},
+      "example": {"description": "Filter and group records", "code": "records = [\n    {\"team\": \"A\", \"score\": 80},\n    {\"team\": \"B\", \"score\": 70},\n    {\"team\": \"A\", \"score\": 90},\n]\nby_team = {}\nfor row in records:\n    by_team.setdefault(row[\"team\"], []).append(row[\"score\"])\nprint({team: sum(scores) / len(scores) for team, scores in by_team.items()})"},
+      "exercise": {"prompt": "Group scores by team and calculate each team's mean in team_means.", "starter": "records = [{\"team\": \"A\", \"score\": 80}, {\"team\": \"B\", \"score\": 70}, {\"team\": \"A\", \"score\": 90}]\n# Build a dictionary of means by team\nteam_means = {}", "tests": "assert team_means == {\"A\": 85, \"B\": 70}", "hint": "Collect each team's scores in a list, then average each list.", "solution": "groups = {}\nfor row in records:\n    groups.setdefault(row[\"team\"], []).append(row[\"score\"])\nteam_means = {team: sum(values) / len(values) for team, values in groups.items()}"},
+      "quiz": {"prompt": "What is a sound first step when a new dataset is loaded?", "choices": ["Inspect schema, types, missingness, and ranges.", "Train the most complex model immediately.", "Replace every missing value with zero."], "answer": 0, "explanation": "Inspection reveals data quality and measurement issues before they contaminate analysis."}
+    },
+    {
+      "part": 6,
+      "title": "Data Visualization",
+      "chapter": "Data Visualization & Exploratory Data Analysis",
+      "minutes": 45,
+      "summary": "Use descriptive plots and summaries to understand a dataset before choosing a model.",
+      "objective": "Summarize distributions and identify patterns without overstating what a plot proves.",
+      "sections": [
+        {"title": "Explore before modeling", "paragraphs": ["Exploratory data analysis (EDA) checks distributions, relationships, outliers, and data quality. A histogram shows one variable's distribution; a scatter plot shows a relationship between two variables.", "A chart is a question made visible. Choose axes and scales that make the comparison fair."], "bullets": ["Label units and sample sizes.", "Do not infer causality from a correlation plot."]},
+        {"title": "Make a useful figure", "paragraphs": ["A useful visualization supports a specific claim and includes enough context to judge it. Compare the plot with numeric summaries and inspect unusual points."], "bullets": ["Report missing values and exclusions.", "Keep the plot tied to the population and data collection process."]}
+      ],
+      "visual": {"title": "EDA turns observations into questions", "caption": "DISTRIBUTION · RELATIONSHIP · DATA QUALITY · HYPOTHESIS", "nodes": [{"label": "Dataset", "detail": "Document its source"}, {"label": "Distribution", "detail": "Shape and outliers"}, {"label": "Relationship", "detail": "Compare two features"}, {"label": "Question", "detail": "State what to test"}]},
+      "example": {"description": "Create histogram counts", "code": "values = [12, 15, 19, 21, 24, 28, 31, 33, 37, 42]\nbins = [0, 0, 0, 0]\nfor value in values:\n    bins[min(value // 10, 3)] += 1\nprint(\"Counts for 0–9, 10–19, 20–29, 30+: \", bins)"},
+      "exercise": {"prompt": "Count the values in the ranges 0–9, 10–19, 20–29, and 30+.", "starter": "values = [12, 15, 19, 21, 24, 28, 31, 33, 37, 42]\nbins = [0, 0, 0, 0]\nfor value in values:\n    # Select the correct bin and increment it\n    pass", "tests": "assert bins == [0, 3, 3, 4]", "hint": "Use min(value // 10, 3) as the bin index.", "solution": "for value in values:\n    bins[min(value // 10, 3)] += 1"},
+      "quiz": {"prompt": "What can a scatter plot establish on its own?", "choices": ["Whether two measured variables show an association in the plotted data.", "That one variable caused the other.", "That the sample represents every population."], "answer": 0, "explanation": "A plot can reveal association, but causality and population generalization require additional design and evidence."}
+    },
+    {
+      "part": 7,
+      "title": "Supervised Learning",
+      "chapter": "Regression & Classification",
+      "minutes": 50,
+      "summary": "Train a baseline model from labeled examples and evaluate predictions on held-out data.",
+      "objective": "Fit and inspect a simple regression model without using test labels for training.",
+      "sections": [
+        {"title": "Learn from labeled examples", "paragraphs": ["Supervised learning pairs input features with a target. Regression predicts a numeric value; classification predicts a category.", "A training algorithm fits parameters using training data. The fitted model then predicts outcomes for examples it did not see."], "bullets": ["Start with a baseline that is easy to explain.", "Split data before fitting learned transformations."]},
+        {"title": "A line is a model", "paragraphs": ["Simple linear regression predicts y as an intercept plus a slope times x. The slope summarizes the fitted relationship in this model; it does not prove that changing x causes y to change."], "bullets": ["Plot residuals and check assumptions.", "Keep test data separate until model choice is finished."]}
+      ],
+      "visual": {"title": "The supervised learning loop", "caption": "FIT ON TRAINING EXAMPLES · EVALUATE ON UNSEEN EXAMPLES", "nodes": [{"label": "Labeled data", "detail": "Features and targets"}, {"label": "Train split", "detail": "Fit model parameters"}, {"label": "Predict", "detail": "Apply to test inputs"}, {"label": "Evaluate", "detail": "Compare with test labels"}]},
+      "example": {"description": "Fit a line with least squares", "code": "def fit_line(xs, ys):\n    x_mean = sum(xs) / len(xs)\n    y_mean = sum(ys) / len(ys)\n    slope = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys)) / sum((x - x_mean) ** 2 for x in xs)\n    return slope, y_mean - slope * x_mean\n\nslope, intercept = fit_line([1, 2, 3, 4], [3, 5, 7, 9])\nprint(f\"y = {slope:.1f}x + {intercept:.1f}\")"},
+      "exercise": {"prompt": "Complete fit_line to return the least-squares slope and intercept.", "starter": "def fit_line(xs, ys):\n    x_mean = sum(xs) / len(xs)\n    y_mean = sum(ys) / len(ys)\n    # Compute covariance divided by x variance\n    slope = 0\n    intercept = 0\n    return slope, intercept\n\nslope, intercept = fit_line([1, 2, 3, 4], [3, 5, 7, 9])", "tests": "assert abs(slope - 2) < 1e-9\nassert abs(intercept - 1) < 1e-9", "hint": "Use the sum of centered x*y values divided by the sum of centered x squared values.", "solution": "slope = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys)) / sum((x - x_mean) ** 2 for x in xs)\nintercept = y_mean - slope * x_mean"},
+      "quiz": {"prompt": "Why hold out test examples until after model selection?", "choices": ["To estimate performance on examples not used for fitting or tuning.", "To guarantee a higher score.", "To let preprocessing learn from all labels."], "answer": 0, "explanation": "Repeatedly using test results to tune a model leaks information and makes the final estimate optimistic."}
+    },
+    {
+      "part": 8,
+      "title": "Unsupervised Learning",
+      "chapter": "Clustering & Dimensionality Reduction",
+      "minutes": 45,
+      "summary": "Explore unlabeled data with clustering and understand what dimensionality reduction preserves.",
+      "objective": "Assign observations to nearest centroids and explain why clusters need interpretation.",
+      "sections": [
+        {"title": "Find structure without labels", "paragraphs": ["Clustering groups observations by a similarity rule. K-means alternates between assigning each point to a centroid and updating centroids to the mean of assigned points.", "PCA rotates centered numeric features into directions that capture decreasing amounts of variance. It can aid visualization or compression but does not automatically make features meaningful."], "bullets": ["Scale features when distance units differ.", "Choose k and initialization carefully; inspect stability."]},
+        {"title": "Interpret with care", "paragraphs": ["An algorithm always returns groups when asked, even if the data do not contain useful clusters. Validate the choice with domain context and sensitivity checks."], "bullets": ["Describe the distance and preprocessing.", "Do not treat a cluster label as a discovered natural kind."]}
+      ],
+      "visual": {"title": "K-means updates groups and centroids", "caption": "ASSIGN EACH POINT · UPDATE EACH CENTROID · REPEAT", "nodes": [{"label": "Unlabeled points", "detail": "Features only"}, {"label": "Assign", "detail": "Nearest centroid"}, {"label": "Update", "detail": "Mean of each group"}, {"label": "Inspect", "detail": "Check stability"}]},
+      "example": {"description": "One K-means assignment step", "code": "points = [1, 2, 8, 9]\ncentroids = [2, 8]\nclusters = [[], []]\nfor point in points:\n    index = min(range(len(centroids)), key=lambda i: abs(point - centroids[i]))\n    clusters[index].append(point)\nprint(clusters)"},
+      "exercise": {"prompt": "Assign each point to the nearest centroid using absolute distance.", "starter": "points = [1, 2, 8, 9]\ncentroids = [2, 8]\nassignments = []\nfor point in points:\n    # Append the index of the nearest centroid\n    pass", "tests": "assert assignments == [0, 0, 1, 1]", "hint": "Use min(range(len(centroids)), key=...) to get the nearest index.", "solution": "for point in points:\n    assignments.append(min(range(len(centroids)), key=lambda i: abs(point - centroids[i])))"},
+      "quiz": {"prompt": "What does PCA primarily do?", "choices": ["Finds orthogonal directions that capture variance in centered numeric data.", "Finds causal effects without assumptions.", "Assigns class labels using a training target."], "answer": 0, "explanation": "PCA is an unsupervised linear transformation based on variance, not a causal method or supervised classifier."}
+    },
+    {
+      "part": 9,
+      "title": "Evaluation & Pipelines",
+      "chapter": "Model Evaluation, Pipelines & Cross-Validation",
+      "minutes": 50,
+      "summary": "Choose metrics that match the task and validate a complete modeling workflow.",
+      "objective": "Calculate classification metrics and explain how cross-validation reduces dependence on one split.",
+      "sections": [
+        {"title": "Metrics answer different questions", "paragraphs": ["Accuracy is the fraction of all predictions that are correct. Precision asks how often positive predictions are correct; recall asks how many actual positives are found.", "A confusion matrix makes false positives and false negatives visible. In imbalanced settings, accuracy alone can conceal failures."], "bullets": ["Choose metrics before inspecting final test results.", "Report uncertainty and class prevalence when relevant."]},
+        {"title": "Pipelines protect evaluation", "paragraphs": ["A pipeline binds preprocessing and prediction steps so each cross-validation fold fits transformations only on its training fold.", "Cross-validation repeats evaluation over several train/validation splits. The folds are not independent studies, but they reveal sensitivity to one partition."], "bullets": ["Keep one final test set for final evaluation.", "Use grouped or temporal splits when observations are dependent."]}
+      ],
+      "visual": {"title": "A leakage-safe evaluation", "caption": "SPLIT FIRST · FIT INSIDE EACH TRAINING FOLD · TEST ONCE", "nodes": [{"label": "Raw data", "detail": "Define the sampling unit"}, {"label": "Cross-validation", "detail": "Repeat train/validate"}, {"label": "Pipeline", "detail": "Fit transforms in-fold"}, {"label": "Final test", "detail": "Report once"}]},
+      "example": {"description": "Compute precision and recall", "code": "actual = [1, 1, 0, 0, 1]\npredicted = [1, 0, 1, 0, 1]\ntp = sum(a == 1 and p == 1 for a, p in zip(actual, predicted))\nfp = sum(a == 0 and p == 1 for a, p in zip(actual, predicted))\nfn = sum(a == 1 and p == 0 for a, p in zip(actual, predicted))\nprint(f\"Precision: {tp / (tp + fp):.2f}; recall: {tp / (tp + fn):.2f}\")"},
+      "exercise": {"prompt": "Compute precision and recall from the provided binary labels.", "starter": "actual = [1, 1, 0, 0, 1]\npredicted = [1, 0, 1, 0, 1]\ntp = sum(a == 1 and p == 1 for a, p in zip(actual, predicted))\nfp = sum(a == 0 and p == 1 for a, p in zip(actual, predicted))\nfn = sum(a == 1 and p == 0 for a, p in zip(actual, predicted))\nprecision = 0\nrecall = 0", "tests": "assert abs(precision - 2 / 3) < 1e-9\nassert abs(recall - 2 / 3) < 1e-9", "hint": "Precision is TP/(TP+FP); recall is TP/(TP+FN).", "solution": "precision = tp / (tp + fp)\nrecall = tp / (tp + fn)"},
+      "quiz": {"prompt": "Why put scaling inside a cross-validation pipeline?", "choices": ["Each fold learns scaling values only from its own training data.", "It guarantees the best possible model.", "It prevents all class imbalance."], "answer": 0, "explanation": "Fitting preprocessing before splitting leaks validation information into training."}
+    },
+    {
+      "part": 10,
+      "title": "Neural Network Foundations",
+      "chapter": "Perceptrons, Activations & Backpropagation",
+      "minutes": 50,
+      "summary": "Follow the forward pass and a simple gradient update in a small neural network.",
+      "objective": "Compute a perceptron prediction and update a weight in the direction that reduces error.",
+      "sections": [
+        {"title": "A neuron combines signals", "paragraphs": ["A perceptron computes a weighted sum of inputs plus a bias, then applies an activation function. Neural networks compose these layers to learn nonlinear representations.", "Training repeatedly predicts, measures loss, computes gradients, and updates parameters. Backpropagation applies the chain rule to efficiently calculate those gradients."], "bullets": ["Weights represent learned parameters.", "A lower training loss does not guarantee generalization."]},
+        {"title": "Watch the update", "paragraphs": ["This tiny exercise uses one weight and squared error so you can inspect every quantity. Larger networks use vectorized calculations and optimizers such as stochastic gradient descent."], "bullets": ["Track training and validation loss separately.", "Use a learning rate small enough for stable updates."]}
+      ],
+      "visual": {"title": "Forward pass and learning update", "caption": "PREDICT · MEASURE ERROR · PROPAGATE GRADIENT · UPDATE WEIGHTS", "nodes": [{"label": "Input", "detail": "Feature values"}, {"label": "Weighted sum", "detail": "Parameters and bias"}, {"label": "Activation", "detail": "Prediction"}, {"label": "Gradient", "detail": "Update parameters"}]},
+      "example": {"description": "One gradient-descent step", "code": "weight = 0.5\nx = 2.0\ntarget = 0.0\nlearning_rate = 0.1\nprediction = weight * x\nerror = prediction - target\nweight -= learning_rate * 2 * error * x\nprint(f\"Updated weight: {weight:.2f}\")"},
+      "exercise": {"prompt": "Compute the updated weight after one squared-error gradient step.", "starter": "weight = 0.5\nx = 2.0\ntarget = 0.0\nlearning_rate = 0.1\nprediction = weight * x\nerror = prediction - target\n# Update weight using derivative 2 * error * x", "tests": "assert abs(weight - 0.1) < 1e-9", "hint": "Subtract learning_rate times the gradient from the old weight.", "solution": "weight -= learning_rate * 2 * error * x"},
+      "quiz": {"prompt": "What does backpropagation compute?", "choices": ["Gradients of the loss with respect to model parameters.", "The number of classes in a dataset.", "A guarantee that validation loss will decrease."], "answer": 0, "explanation": "Backpropagation efficiently applies the chain rule to compute parameter gradients."}
+    },
+    {
+      "part": 11,
+      "title": "Computer Vision & CNNs",
+      "chapter": "Convolutional Neural Networks for Image Tasks",
+      "minutes": 45,
+      "summary": "See how local filters transform an image and how a CNN builds spatial features.",
+      "objective": "Apply a small convolution filter and describe the role of pooling and held-out image evaluation.",
+      "sections": [
+        {"title": "Images are structured arrays", "paragraphs": ["A grayscale image is a two-dimensional grid; a color image adds a channel dimension. Convolution applies a small learned filter across local neighborhoods.", "Pooling reduces spatial size, and deeper layers combine simple patterns into richer features. A classifier maps the final representation to task labels."], "bullets": ["Keep image dimensions and channel order explicit.", "Split by source or subject when near-duplicate images could leak across sets."]},
+        {"title": "Evaluate the vision task", "paragraphs": ["Classification accuracy is only one view of an image model. Inspect per-class errors, class balance, and whether train and test images reflect the intended deployment setting."], "bullets": ["Use augmentation only on training data.", "Check for background or watermark shortcuts."]}
+      ],
+      "visual": {"title": "How a CNN processes an image", "caption": "PIXELS → LOCAL FILTERS → FEATURE MAPS → TASK OUTPUT", "nodes": [{"label": "Image", "detail": "Pixels and channels"}, {"label": "Convolution", "detail": "Local learned filters"}, {"label": "Feature maps", "detail": "Edges and patterns"}, {"label": "Prediction", "detail": "Class or location"}]},
+      "example": {"description": "Apply a 2×2 filter", "code": "image = [[1, 2, 0], [0, 1, 3], [2, 1, 0]]\nfilter_2x2 = [[1, 0], [0, 1]]\nresponse = sum(image[r][c] * filter_2x2[r][c] for r in range(2) for c in range(2))\nprint(\"Filter response:\", response)"},
+      "exercise": {"prompt": "Compute the top-left response of the 2×2 filter over the image.", "starter": "image = [[1, 2, 0], [0, 1, 3], [2, 1, 0]]\nfilter_2x2 = [[1, 0], [0, 1]]\nresponse = 0\n# Multiply corresponding values in the top-left 2x2 patch and sum", "tests": "assert response == 2", "hint": "The four products are 1, 0, 0, and 1.", "solution": "response = sum(image[r][c] * filter_2x2[r][c] for r in range(2) for c in range(2))"},
+      "quiz": {"prompt": "What is a key property of a convolutional filter?", "choices": ["It is reused across local image regions to detect patterns.", "It assigns a unique independent weight to every image location.", "It replaces the need for a test set."], "answer": 0, "explanation": "Convolution shares filter weights spatially, which helps model local patterns efficiently."}
+    },
+    {
+      "part": 12,
+      "title": "Sequences & Transformers",
+      "chapter": "RNNs, LSTMs & Intro to Transformers",
+      "minutes": 50,
+      "summary": "Compare recurrent state with attention and inspect how context weights combine information.",
+      "objective": "Calculate a simple attention-weighted context and identify what it does not prove.",
+      "sections": [
+        {"title": "Sequence models preserve context", "paragraphs": ["RNNs process tokens or time steps in order and pass a hidden state forward. LSTMs add gates that help retain or forget information over longer sequences.", "Transformers use attention to calculate which input positions should contribute to a representation. Attention weights are model computations, not guaranteed human explanations."], "bullets": ["Tokenization determines the units a language model sees.", "Use time-aware splits for forecasting tasks."]},
+        {"title": "A tiny attention calculation", "paragraphs": ["Attention scores are normalized into weights, often with softmax. The weights combine value vectors into a context representation used by later layers."], "bullets": ["A weighted average is a teaching simplification.", "Generated text still requires grounding and evaluation."]}
+      ],
+      "visual": {"title": "From sequence to contextual representation", "caption": "TOKENS · POSITIONS · ATTENTION WEIGHTS · CONTEXT", "nodes": [{"label": "Sequence", "detail": "Tokens or time steps"}, {"label": "Represent", "detail": "Embedding + position"}, {"label": "Attend", "detail": "Weight relevant inputs"}, {"label": "Context", "detail": "Combine value vectors"}]},
+      "example": {"description": "Combine values with attention weights", "code": "weights = [0.1, 0.7, 0.2]\nvalues = [10, 20, 40]\ncontext = sum(weight * value for weight, value in zip(weights, values))\nprint(f\"Context: {context:.1f}\")"},
+      "exercise": {"prompt": "Calculate the attention-weighted context for the supplied values.", "starter": "weights = [0.1, 0.7, 0.2]\nvalues = [10, 20, 40]\n# Compute the weighted sum\ncontext = 0", "tests": "assert abs(context - 23) < 1e-9", "hint": "Multiply paired weights and values, then sum the products.", "solution": "context = sum(weight * value for weight, value in zip(weights, values))"},
+      "quiz": {"prompt": "Do attention weights automatically provide a faithful explanation of a model's reasoning?", "choices": ["No; they describe a computation and need separate validation.", "Yes; the highest weight always proves causality.", "Yes; every model has identical attention."], "answer": 0, "explanation": "Attention values can be useful diagnostics but are not automatically faithful explanations or causal evidence."}
+    },
+    {
+      "part": 13,
+      "title": "End-to-End Project",
+      "chapter": "Data → Model → Deployment",
+      "minutes": 55,
+      "summary": "Scope a capstone and connect data preparation, a baseline model, evaluation, and a usable demo.",
+      "objective": "Write a reproducible project plan that specifies the user, data, baseline, metric, and deployment boundary.",
+      "sections": [
+        {"title": "Scope a useful project", "paragraphs": ["A project starts with a user and a decision, not a model name. Specify the problem, data access, target, baseline, evaluation, and risk before building.", "A complete workflow records data provenance, preprocessing, train/validation/test partitions, and the model artifact."], "bullets": ["Prefer a small, measurable question.", "Set a rule for what result would change your conclusion."]},
+        {"title": "Make a safe demo", "paragraphs": ["An API wraps a prediction function with an input contract and an output format. Validate inputs and state what the model is not designed to do.", "A local classroom demo is not a production service. Production requires access control, monitoring, logging, and a responsible fallback."], "bullets": ["Keep secrets out of source code.", "Document limitations beside the demo."]}
+      ],
+      "visual": {"title": "A project from question to demo", "caption": "PLAN THE EVIDENCE BEFORE BUILDING THE INTERFACE", "nodes": [{"label": "Question", "detail": "User and decision"}, {"label": "Data", "detail": "Provenance and split"}, {"label": "Model", "detail": "Baseline and evaluation"}, {"label": "Demo", "detail": "Input checks and limits"}]},
+      "example": {"description": "Validate a prediction request", "code": "def predict_risk(features):\n    if len(features) != 2:\n        raise ValueError(\"Expected exactly two features\")\n    score = 0.7 * features[0] + 0.3 * features[1]\n    return {\"score\": score, \"model\": \"baseline-demo\"}\n\nprint(predict_risk([0.4, 0.8]))"},
+      "exercise": {"prompt": "Implement a request validator that accepts exactly two numeric features and returns their mean.", "starter": "def predict(features):\n    # Reject inputs with the wrong length\n    # Return the mean of the two features\n    return None\n\nresult = predict([0.2, 0.8])", "tests": "assert result == 0.5\ntry:\n    predict([1])\nexcept ValueError:\n    rejected = True\nelse:\n    rejected = False\nassert rejected", "hint": "Raise ValueError when len(features) is not 2.", "solution": "def predict(features):\n    if len(features) != 2:\n        raise ValueError(\"Expected exactly two features\")\n    return sum(features) / 2"},
+      "quiz": {"prompt": "What should a capstone proposal define before model training?", "choices": ["The user problem, data, baseline, evaluation metric, and risks.", "Only the neural-network architecture.", "A target score chosen after test results."], "answer": 0, "explanation": "A researchable project needs a clear question, data plan, baseline, evaluation, and risk boundaries."}
+    },
+    {
+      "part": 14,
+      "title": "Capstone & Next Steps",
+      "chapter": "Present, Reproduce & Continue Learning",
+      "minutes": 50,
+      "summary": "Package a final result with evidence, limitations, reproducible artifacts, and a clear next step.",
+      "objective": "Save and reload a simple model artifact and communicate what the evaluation does and does not show.",
+      "sections": [
+        {"title": "Present the evidence", "paragraphs": ["A capstone report states the question, data, method, result, uncertainty, limitations, and intended use. A working demo is valuable only when its evaluation can be understood.", "A saved model artifact should travel with its feature definitions, preprocessing, software versions, and provenance."], "bullets": ["Include a simple baseline and honest comparisons.", "Share code and data only when licensing and privacy permit."]},
+        {"title": "Choose a responsible next step", "paragraphs": ["A Kaggle score or public demo is one feedback signal, not a substitute for appropriate validation. Career growth comes from a portfolio that shows reasoning, reproducibility, and communication."], "bullets": ["Record what failed as well as what worked.", "Check current venue, dataset, and deployment requirements before release."]}
+      ],
+      "visual": {"title": "From capstone result to reproducible work", "caption": "ARTIFACT · EVIDENCE · LIMITATIONS · NEXT QUESTION", "nodes": [{"label": "Save", "detail": "Model and metadata"}, {"label": "Verify", "detail": "Reload and retest"}, {"label": "Communicate", "detail": "Evidence and limits"}, {"label": "Share", "detail": "Respect rights and privacy"}]},
+      "example": {"description": "Save and reload model metadata", "code": "import json\nfrom io import StringIO\n\nartifact = {\"slope\": 2.0, \"intercept\": 1.0, \"features\": [\"x\"]}\nbuffer = StringIO()\njson.dump(artifact, buffer)\nbuffer.seek(0)\nloaded = json.load(buffer)\nprint(loaded)"},
+      "exercise": {"prompt": "Serialize the model dictionary to JSON text and load it back into restored.", "starter": "import json\n\nmodel = {\"slope\": 2.0, \"intercept\": 1.0, \"features\": [\"x\"]}\n# Convert model to JSON text and parse it back\nrestored = {}", "tests": "assert restored == model\nassert restored[\"features\"] == [\"x\"]", "hint": "Use json.dumps followed by json.loads.", "solution": "restored = json.loads(json.dumps(model))"},
+      "quiz": {"prompt": "What makes a model result reproducible?", "choices": ["Code, data provenance, parameters, environment, and evaluation protocol are recorded.", "Only the final accuracy is published.", "The largest model is used."], "answer": 0, "explanation": "Reproduction requires enough context to recover the data, procedure, parameters, and evaluation."}
+    }
+  ]
+}
