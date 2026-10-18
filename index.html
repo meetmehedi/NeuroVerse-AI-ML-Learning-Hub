@@ -429,7 +429,7 @@
       <div class="sandbox-toolbar">
         <label class="sandbox-template-picker">
           <span>Preset Template:</span>
-          <select id="sandbox-template-select">
+          <select id="sandbox-template-select" onchange="if(window.loadSandboxTemplate)loadSandboxTemplate(this.value)">
             <option value="intro">1. Python Basics & Data Structures</option>
             <option value="math">2. Vector Mathematics & Statistics</option>
             <option value="classifier">3. Logistic Model Decision Boundary</option>
@@ -438,8 +438,8 @@
           </select>
         </label>
         <div class="sandbox-actions">
-          <button class="button button-light" id="sandbox-clear-btn" type="button">Clear Console</button>
-          <button class="button button-dark" id="sandbox-run-btn" type="button">▶ Run Code (Ctrl+Enter)</button>
+          <button class="button button-light" id="sandbox-clear-btn" type="button" onclick="const o=document.getElementById('sandbox-output-console');if(o)o.textContent=''">Clear Console</button>
+          <button class="button button-dark" id="sandbox-run-btn" type="button" onclick="if(window.runSandboxCode)runSandboxCode()">▶ Run Code (Ctrl+Enter)</button>
         </div>
       </div>
       <div class="sandbox-body">

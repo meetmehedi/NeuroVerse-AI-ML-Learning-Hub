@@ -1122,34 +1122,53 @@ function runSandboxCode() {
   const runBtn = document.getElementById("sandbox-run-btn");
   if (!editor || !outputEl) return;
 
-  outputEl.textContent = "Initializing Python WebAssembly runtime…";
+  const code = editor.value.trim();
+  if (!code) {
+    outputEl.textContent = "(Please write or choose some Python code to run)";
+    return;
+  }
+
+  outputEl.textContent = "Executing Python code in WebAssembly worker…\n(First run downloads Pyodide WASM ~20MB; subsequent runs are instant)";
   if (statusEl) statusEl.textContent = "Executing…";
-  if (runBtn) runBtn.disabled = true;
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.textContent = "⏳ Running…";
+  }
 
   const id = ++app.sandboxRequestId;
 
   clearTimeout(app.sandboxTimeout);
   app.sandboxTimeout = setTimeout(() => {
-    if (runBtn) runBtn.disabled = false;
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.textContent = "▶ Run Code (Ctrl+Enter)";
+    }
     if (statusEl) statusEl.textContent = "Execution Timed Out";
-    outputEl.textContent = "Execution timed out (15s limit). If this is your first run, the browser is downloading the Pyodide WebAssembly package (~20MB). Please wait a moment and try clicking Run again.";
-  }, 15000);
+    outputEl.textContent = "Execution timed out (20s limit). If this is your first run, the browser is downloading the Pyodide WebAssembly package (~20MB). Please wait a moment and click Run again.";
+  }, 20000);
 
   try {
     const worker = createWorker();
     worker.postMessage({
       id,
-      code: editor.value,
+      code,
       tests: "",
       mode: "run"
     });
   } catch (err) {
     clearTimeout(app.sandboxTimeout);
-    if (runBtn) runBtn.disabled = false;
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.textContent = "▶ Run Code (Ctrl+Enter)";
+    }
     if (statusEl) statusEl.textContent = "Error";
     outputEl.textContent = "Could not launch Python worker:\n" + err.message;
   }
 }
+
+window.runSandboxCode = runSandboxCode;
+window.loadSandboxTemplate = loadSandboxTemplate;
+window.openSandboxDialog = openSandboxDialog;
 
 // ==================== CERTIFICATE ====================
 function openCertificateDialog() {
@@ -2686,7 +2705,7 @@ function createWorker() {
   `;
   const workerUrl = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
   app.worker = new Worker(workerUrl);
-  URL.revokeObjectURL(workerUrl);
+  // Do NOT revoke workerUrl synchronously — Safari will terminate the worker before loading!
 
   app.worker.onmessage = ({ data }) => {
     // 1. Streaming status updates
@@ -2706,7 +2725,10 @@ function createWorker() {
       const runBtn = document.getElementById("sandbox-run-btn");
       const statusEl = document.getElementById("sandbox-status");
       const outputEl = document.getElementById("sandbox-output-console");
-      if (runBtn) runBtn.disabled = false;
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.textContent = "▶ Run Code (Ctrl+Enter)";
+      }
       if (statusEl) statusEl.textContent = "Execution complete";
       if (outputEl) {
         if (data.error) {
@@ -2746,7 +2768,10 @@ function createWorker() {
     const runBtn = document.getElementById("sandbox-run-btn");
     const statusEl = document.getElementById("sandbox-status");
     const outputEl = document.getElementById("sandbox-output-console");
-    if (runBtn) runBtn.disabled = false;
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.textContent = "▶ Run Code (Ctrl+Enter)";
+    }
     if (statusEl) statusEl.textContent = "Runtime Error";
     if (outputEl) {
       outputEl.textContent = "Could not initialize Pyodide WebAssembly runtime. Please check your internet connection (Pyodide requires CDN access) and try again.\n\nError: " + (event.message || "Script loading failed");

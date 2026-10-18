@@ -103,7 +103,7 @@ class AcademyHandler(BaseHTTPRequestHandler):
             "script-src 'self' blob: https://cdn.jsdelivr.net 'wasm-unsafe-eval'; "
             "style-src 'self' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
-            "connect-src 'self' https://cdn.jsdelivr.net; "
+            "connect-src 'self' https://cdn.jsdelivr.net https://script.google.com https://script.googleusercontent.com; "
             "worker-src 'self' blob:; img-src 'self' data:; "
             "object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
         )
