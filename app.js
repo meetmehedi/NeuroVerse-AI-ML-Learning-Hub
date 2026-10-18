@@ -1166,9 +1166,17 @@ function runSandboxCode() {
   }
 }
 
+function closeSandboxDialog() {
+  const dialog = document.getElementById("sandbox-dialog");
+  if (dialog && typeof dialog.close === "function") {
+    dialog.close();
+  }
+}
+
 window.runSandboxCode = runSandboxCode;
 window.loadSandboxTemplate = loadSandboxTemplate;
 window.openSandboxDialog = openSandboxDialog;
+window.closeSandboxDialog = closeSandboxDialog;
 
 // ==================== CERTIFICATE ====================
 function openCertificateDialog() {
@@ -3398,7 +3406,10 @@ const sandboxEditor = document.getElementById("sandbox-code-editor");
 const sandboxCopyBtn = document.getElementById("sandbox-copy-btn");
 
 if (sandboxOpenBtn) sandboxOpenBtn.addEventListener("click", openSandboxDialog);
-if (sandboxCloseBtn) sandboxCloseBtn.addEventListener("click", () => document.getElementById("sandbox-dialog").close());
+if (sandboxCloseBtn) sandboxCloseBtn.addEventListener("click", () => document.getElementById("sandbox-dialog")?.close());
+document.querySelectorAll(".sandbox-back-btn, #sandbox-back-btn, #sandbox-back-btn-tb").forEach((btn) => {
+  btn.addEventListener("click", () => document.getElementById("sandbox-dialog")?.close());
+});
 if (sandboxRunBtn) sandboxRunBtn.addEventListener("click", runSandboxCode);
 if (sandboxClearBtn) sandboxClearBtn.addEventListener("click", () => {
   const out = document.getElementById("sandbox-output-console");
@@ -3442,8 +3453,31 @@ const certPrintBtn = document.getElementById("cert-print-btn");
 const certRecipientInput = document.getElementById("cert-recipient-input");
 
 if (certOpenBtn) certOpenBtn.addEventListener("click", openCertificateDialog);
-if (certCloseBtn) certCloseBtn.addEventListener("click", () => document.getElementById("certificate-dialog").close());
+if (certCloseBtn) certCloseBtn.addEventListener("click", () => document.getElementById("certificate-dialog")?.close());
 if (certPrintBtn) certPrintBtn.addEventListener("click", () => window.print());
+
+// Universal Backdrop Click Dismissal for all HTML5 <dialog> modals
+document.querySelectorAll("dialog").forEach((dialog) => {
+  dialog.addEventListener("click", (event) => {
+    const rect = dialog.getBoundingClientRect();
+    const isClickedInside = (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    );
+    if (!isClickedInside) {
+      dialog.close();
+    }
+  });
+});
+
+// Universal Escape Key Handler to exit any open dialog
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    document.querySelectorAll("dialog[open]").forEach((d) => d.close());
+  }
+});
 if (certRecipientInput) {
   certRecipientInput.addEventListener("input", (e) => {
     const name = e.target.value.trim() || "Learner";

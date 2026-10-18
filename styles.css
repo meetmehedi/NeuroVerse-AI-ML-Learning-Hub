@@ -1964,9 +1964,70 @@ dialog::backdrop {
 .sandbox-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding-right: 46px;
+  align-items: center;
+  padding-right: 0;
   margin-bottom: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.sandbox-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sandbox-header .dialog-close {
+  position: static;
+}
+.sandbox-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: var(--glass-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: var(--glass-shadow-soft);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sandbox-back-btn:hover {
+  background: var(--glass-pill-active);
+  transform: translateX(-2px);
+  border-color: var(--green);
+}
+.sandbox-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border-subtle);
+  font-size: 11px;
+  color: var(--muted);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sandbox-shortcut-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.sandbox-shortcut-hint kbd {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--ink);
+  box-shadow: var(--glass-shadow-soft);
 }
 .sandbox-header h2 {
   font-family: var(--serif);
@@ -2071,19 +2132,27 @@ dialog::backdrop {
 
 /* Certificate Dialog & Styling */
 .certificate-dialog {
-  border: 0;
-  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
   padding: 24px;
   max-width: 900px;
   width: 96vw;
   max-height: 94vh;
   overflow-y: auto;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.25);
-  background: #fbfbf8;
+  box-shadow: var(--glass-dialog-shadow);
+  background: var(--glass-dialog);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
   margin: auto;
   position: fixed;
   inset: 0;
   z-index: 10000;
+}
+.certificate-dialog::backdrop {
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  background: rgba(14, 22, 17, 0.65);
+  z-index: 9999;
 }
 .cert-dialog-bar {
   display: flex;
@@ -2091,7 +2160,9 @@ dialog::backdrop {
   align-items: center;
   margin-bottom: 14px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--glass-border-subtle);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .cert-bar-info {
   display: flex;
@@ -2102,7 +2173,11 @@ dialog::backdrop {
 }
 .cert-bar-actions {
   display: flex;
+  align-items: center;
   gap: 10px;
+}
+.cert-bar-actions .dialog-close {
+  position: static;
 }
 .cert-customizer {
   display: flex;
