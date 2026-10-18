@@ -1100,15 +1100,17 @@ for x in inputs:
 function openSandboxDialog() {
   const dialog = document.getElementById("sandbox-dialog");
   const editor = document.getElementById("sandbox-code-editor");
-  if (!editor.value.trim()) {
+  if (editor && !editor.value.trim()) {
     editor.value = sandboxTemplates.intro;
   }
+  // Pre-initialize worker in the background
+  try { createWorker(); } catch (err) { console.warn("Worker warm-up:", err); }
   dialog.showModal();
 }
 
 function loadSandboxTemplate(key) {
   const editor = document.getElementById("sandbox-code-editor");
-  if (sandboxTemplates[key]) {
+  if (editor && sandboxTemplates[key]) {
     editor.value = sandboxTemplates[key];
   }
 }
@@ -1119,42 +1121,34 @@ function runSandboxCode() {
   const statusEl = document.getElementById("sandbox-status");
   const runBtn = document.getElementById("sandbox-run-btn");
   if (!editor || !outputEl) return;
-  outputEl.textContent = "Running Python code in WebAssembly worker…";
-  statusEl.textContent = "Executing…";
-  runBtn.disabled = true;
+
+  outputEl.textContent = "Initializing Python WebAssembly runtime…";
+  if (statusEl) statusEl.textContent = "Executing…";
+  if (runBtn) runBtn.disabled = true;
 
   const id = ++app.sandboxRequestId;
-  const worker = createWorker();
 
-  const handleMessage = ({ data }) => {
-    if (data.id !== id) return;
-    runBtn.disabled = false;
-    statusEl.textContent = "Execution Complete";
-    if (data.error) {
-      outputEl.textContent = `Traceback (most recent call last):\n${data.error}`;
-    } else {
-      const clean = data.output.replace("__ACADEMY_EXERCISE_PASSED__", "").trim();
-      outputEl.textContent = clean || "(Code ran successfully with no printed output.)";
-      unlockBadge("python_runner");
-      addXP(20, "Sandbox code executed");
-    }
-  };
+  clearTimeout(app.sandboxTimeout);
+  app.sandboxTimeout = setTimeout(() => {
+    if (runBtn) runBtn.disabled = false;
+    if (statusEl) statusEl.textContent = "Execution Timed Out";
+    outputEl.textContent = "Execution timed out (15s limit). If this is your first run, the browser is downloading the Pyodide WebAssembly package (~20MB). Please wait a moment and try clicking Run again.";
+  }, 15000);
 
-  const currentOnMessage = worker.onmessage;
-  worker.onmessage = (event) => {
-    if (event.data.id === id) {
-      handleMessage(event);
-    } else if (currentOnMessage) {
-      currentOnMessage(event);
-    }
-  };
-
-  worker.postMessage({
-    id,
-    code: editor.value,
-    tests: "",
-    mode: "run"
-  });
+  try {
+    const worker = createWorker();
+    worker.postMessage({
+      id,
+      code: editor.value,
+      tests: "",
+      mode: "run"
+    });
+  } catch (err) {
+    clearTimeout(app.sandboxTimeout);
+    if (runBtn) runBtn.disabled = false;
+    if (statusEl) statusEl.textContent = "Error";
+    outputEl.textContent = "Could not launch Python worker:\n" + err.message;
+  }
 }
 
 // ==================== CERTIFICATE ====================
@@ -2657,14 +2651,23 @@ function outputText(text, state = "") {
 function createWorker() {
   if (app.worker) return app.worker;
   const source = `
-    importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js");
-    let runtime;
+    let runtime = null;
     self.onmessage = async ({data}) => {
       const {id, code, tests, mode} = data;
       try {
-        runtime ||= await loadPyodide();
+        if (!runtime) {
+          self.postMessage({ id, status: "loading", message: "Downloading Python WebAssembly runtime..." });
+          if (typeof loadPyodide === "undefined") {
+            importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js");
+          }
+          runtime = await loadPyodide({
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"
+          });
+        }
+        self.postMessage({ id, status: "executing", message: "Executing code..." });
         let output = "";
         runtime.setStdout({batched: (text) => { output += text + "\\n"; }});
+        runtime.setStderr({batched: (text) => { output += text + "\\n"; }});
         const namespace = runtime.runPython("dict()");
         try {
           await runtime.runPythonAsync(code, {globals: namespace});
@@ -2684,7 +2687,40 @@ function createWorker() {
   const workerUrl = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
   app.worker = new Worker(workerUrl);
   URL.revokeObjectURL(workerUrl);
+
   app.worker.onmessage = ({ data }) => {
+    // 1. Streaming status updates
+    if (data.status) {
+      if (data.id === app.sandboxRequestId) {
+        const statusEl = document.getElementById("sandbox-status");
+        if (statusEl) statusEl.textContent = data.message;
+      } else if (data.id === app.requestId) {
+        statusText(data.message);
+      }
+      return;
+    }
+
+    // 2. Sandbox execution output
+    if (data.id === app.sandboxRequestId) {
+      clearTimeout(app.sandboxTimeout);
+      const runBtn = document.getElementById("sandbox-run-btn");
+      const statusEl = document.getElementById("sandbox-status");
+      const outputEl = document.getElementById("sandbox-output-console");
+      if (runBtn) runBtn.disabled = false;
+      if (statusEl) statusEl.textContent = "Execution complete";
+      if (outputEl) {
+        if (data.error) {
+          outputEl.textContent = `Traceback (most recent call last):\n${data.error}`;
+        } else {
+          outputEl.textContent = data.output || "(Code ran successfully with no printed output.)";
+          unlockBadge("python_runner");
+          addXP(20, "Sandbox code executed");
+        }
+      }
+      return;
+    }
+
+    // 3. Lesson exercise execution output
     if (data.id !== app.requestId) return;
     clearTimeout(app.runTimeout);
     enableEditors();
@@ -2702,9 +2738,19 @@ function createWorker() {
     }
     outputText(output, "success");
   };
+
   app.worker.onerror = (event) => {
     clearTimeout(app.runTimeout);
+    clearTimeout(app.sandboxTimeout);
     enableEditors();
+    const runBtn = document.getElementById("sandbox-run-btn");
+    const statusEl = document.getElementById("sandbox-status");
+    const outputEl = document.getElementById("sandbox-output-console");
+    if (runBtn) runBtn.disabled = false;
+    if (statusEl) statusEl.textContent = "Runtime Error";
+    if (outputEl) {
+      outputEl.textContent = "Could not initialize Pyodide WebAssembly runtime. Please check your internet connection (Pyodide requires CDN access) and try again.\n\nError: " + (event.message || "Script loading failed");
+    }
     statusText("Python runtime failed to load");
     outputText(`Could not start the Python runtime. Check your connection and try again. ${event.message || ""}`.trim(), "error");
     app.worker?.terminate();
@@ -3323,17 +3369,46 @@ const sandboxRunBtn = document.getElementById("sandbox-run-btn");
 const sandboxClearBtn = document.getElementById("sandbox-clear-btn");
 const sandboxResetBtn = document.getElementById("sandbox-reset-btn");
 const sandboxTemplateSel = document.getElementById("sandbox-template-select");
+const sandboxEditor = document.getElementById("sandbox-code-editor");
+const sandboxCopyBtn = document.getElementById("sandbox-copy-btn");
 
 if (sandboxOpenBtn) sandboxOpenBtn.addEventListener("click", openSandboxDialog);
 if (sandboxCloseBtn) sandboxCloseBtn.addEventListener("click", () => document.getElementById("sandbox-dialog").close());
 if (sandboxRunBtn) sandboxRunBtn.addEventListener("click", runSandboxCode);
 if (sandboxClearBtn) sandboxClearBtn.addEventListener("click", () => {
-  document.getElementById("sandbox-output").textContent = "";
+  const out = document.getElementById("sandbox-output-console");
+  if (out) out.textContent = "";
 });
 if (sandboxResetBtn) sandboxResetBtn.addEventListener("click", () => {
   if (sandboxTemplateSel) loadSandboxTemplate(sandboxTemplateSel.value);
 });
 if (sandboxTemplateSel) sandboxTemplateSel.addEventListener("change", (e) => loadSandboxTemplate(e.target.value));
+
+if (sandboxEditor) {
+  sandboxEditor.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      runSandboxCode();
+      return;
+    }
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const start = sandboxEditor.selectionStart;
+      const end = sandboxEditor.selectionEnd;
+      sandboxEditor.setRangeText("    ", start, end, "end");
+    }
+  });
+}
+
+if (sandboxCopyBtn) {
+  sandboxCopyBtn.addEventListener("click", () => {
+    const out = document.getElementById("sandbox-output-console");
+    if (out && out.textContent) {
+      navigator.clipboard?.writeText(out.textContent);
+      showToast("Console output copied to clipboard!");
+    }
+  });
+}
 
 // Verifiable Certificate Modal
 const certOpenBtn = document.getElementById("certificate-open");

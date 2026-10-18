@@ -445,7 +445,20 @@
       <div class="sandbox-body">
         <div class="sandbox-editor-col">
           <div class="sandbox-col-head"><span>CODE EDITOR</span><span id="sandbox-status">Pyodide Ready</span></div>
-          <textarea class="code-editor sandbox-textarea" id="sandbox-code-editor" spellcheck="false"></textarea>
+          <textarea class="code-editor sandbox-textarea" id="sandbox-code-editor" spellcheck="false"># 1. Python Basics & Data Structures
+numbers = [12, 45, 67, 89, 23, 90, 34]
+squared_evens = [n ** 2 for n in numbers if n % 2 == 0]
+
+data_dict = {
+    "framework": "Pyodide / Python 3.12",
+    "total_numbers": len(numbers),
+    "mean_value": sum(numbers) / len(numbers),
+    "squared_evens": squared_evens
+}
+
+print("=== Python Data Structures Summary ===")
+for key, value in data_dict.items():
+    print(f"  {key}: {value}")</textarea>
         </div>
         <div class="sandbox-output-col">
           <div class="sandbox-col-head"><span>TERMINAL OUTPUT</span><button class="copy-snippet-btn" id="sandbox-copy-btn" type="button">Copy Output</button></div>
