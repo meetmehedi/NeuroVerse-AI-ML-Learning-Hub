@@ -214,20 +214,155 @@ function guestProgress(courseId = app.courseId) {
   }
 }
 
+// ==================== STATIC / GITHUB PAGES SUPPORT ====================
+// Detect if we are running on GitHub Pages (or any static host with no backend)
+const isStaticHost = (() => {
+  const h = location.hostname;
+  return (
+    h === "" || // file:
+    h.endsWith(".github.io") ||
+    h.endsWith(".netlify.app") ||
+    h.endsWith(".vercel.app") ||
+    h === "localhost" && location.port === "" // file:// opened locally
+  );
+})();
+
+// True once we confirm /api/ is unreachable on this host
+let staticMode = isStaticHost;
+
+// Lightweight localStorage user store for static mode
+const staticUserKey = "neuroverse-static-user-v1";
+const googleSheetUrlKey = "neuroverse-sheet-url-v1";
+
+// Post progress to a user-configured Google Apps Script Web App URL (no-cors)
+function syncToGoogleSheet(payload) {
+  const url = localStorage.getItem(googleSheetUrlKey);
+  if (!url) return;
+  try {
+    fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        ...payload
+      })
+    }).catch(() => {}); // fire-and-forget
+  } catch {
+    // ignore
+  }
+}
+
+// Map /api/ URLs to static JSON files or localStorage
+async function handleStaticApi(url, method, body) {
+  const u = url.split("?")[0];
+  const params = new URL(url, location.href).searchParams;
+
+  // --- Course data ---
+  if (u === "/api/course" || u === "./api/course") {
+    const course = params.get("course") || "handbook";
+    const fileMap = {
+      handbook: "./course.json",
+      beginner: "./beginner_course.json",
+      pydsml: "./pydsml_course.json"
+    };
+    const file = fileMap[course] || "./course.json";
+    const res = await fetch(file);
+    return res.json();
+  }
+
+  // --- Library ---
+  if (u === "/api/library" || u === "./api/library") {
+    const res = await fetch("./library.json");
+    return res.json();
+  }
+
+  // --- Auth: who am I? ---
+  if (u === "/api/auth/me" || u === "./api/auth/me") {
+    const raw = localStorage.getItem(staticUserKey);
+    const user = raw ? JSON.parse(raw) : null;
+    return { user, csrfToken: null };
+  }
+
+  // --- Auth: register / login ---
+  if (
+    u === "/api/auth/register" || u === "./api/auth/register" ||
+    u === "/api/auth/login" || u === "./api/auth/login"
+  ) {
+    const isRegister = u.includes("register");
+    const existing = localStorage.getItem(staticUserKey);
+    if (isRegister && existing) {
+      const err = new Error("An account already exists in this browser.");
+      err.status = 409;
+      throw err;
+    }
+    const user = { id: "local", email: body.email, name: body.name || body.email.split("@")[0] };
+    localStorage.setItem(staticUserKey, JSON.stringify(user));
+    syncToGoogleSheet({ event: "auth", email: user.email, name: user.name });
+    const guest = guestProgress(app.courseId);
+    return { user, csrfToken: null, track: guest.track, completed: guest.completed };
+  }
+
+  // --- Auth: logout ---
+  if (u === "/api/auth/logout" || u === "./api/auth/logout") {
+    localStorage.removeItem(staticUserKey);
+    return {};
+  }
+
+  // --- Progress GET ---
+  if (u === "/api/progress" || u === "./api/progress") {
+    if ((method || "GET").toUpperCase() === "GET") {
+      const course = params.get("course") || "handbook";
+      return guestProgress(course);
+    }
+    // Progress PUT
+    const { track, completed, course } = body || {};
+    const key = course === "beginner" ? beginnerProgressKey : course === "pydsml" ? pydsmlProgressKey : storageKey;
+    const saved = JSON.parse(localStorage.getItem(key) || "{}");
+    const next = { ...saved, track: track || saved.track, completed: completed ?? saved.completed };
+    localStorage.setItem(key, JSON.stringify(next));
+    syncToGoogleSheet({ event: "progress", course, track: next.track, completed: next.completed });
+    return { track: next.track, completed: next.completed };
+  }
+
+  // Fallback: 404-like
+  const err = new Error(`Static API: no handler for ${url}`);
+  err.status = 404;
+  throw err;
+}
+
 async function request(url, options = {}) {
-  const headers = new Headers(options.headers || {});
   const method = (options.method || "GET").toUpperCase();
+
+  // In static mode: skip fetch entirely and use localStorage / JSON files
+  if (staticMode) {
+    return handleStaticApi(url, method, options.body);
+  }
+
+  const headers = new Headers(options.headers || {});
   if (options.body !== undefined) headers.set("Content-Type", "application/json");
   if (["POST", "PUT", "DELETE"].includes(method) && app.csrfToken) {
     headers.set("X-CSRF-Token", app.csrfToken);
   }
-  const response = await fetch(url, {
-    ...options,
-    method,
-    headers,
-    credentials: "same-origin",
-    body: options.body === undefined ? undefined : JSON.stringify(options.body)
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      method,
+      headers,
+      credentials: "same-origin",
+      body: options.body === undefined ? undefined : JSON.stringify(options.body)
+    });
+  } catch (networkError) {
+    // Server is not reachable — fall back to static mode for this session
+    staticMode = true;
+    return handleStaticApi(url, method, options.body);
+  }
+  // If the /api/ route returns 404 (no server running), switch to static mode
+  if (response.status === 404 && url.includes("/api/")) {
+    staticMode = true;
+    return handleStaticApi(url, method, options.body);
+  }
   let payload;
   try {
     payload = await response.json();
@@ -241,6 +376,7 @@ async function request(url, options = {}) {
   }
   return payload;
 }
+
 
 function activePathway() {
   if (app.courseId === "beginner") {
@@ -2938,6 +3074,41 @@ document.getElementById("auth-switch-copy").addEventListener("click", (event) =>
     openAuth(app.authMode === "signup" ? "login" : "signup", email);
   }
 });
+
+// Google Sheets Cloud Sync — static mode only
+document.getElementById("sheet-url-save").addEventListener("click", () => {
+  const input = document.getElementById("sheet-url-input");
+  const url = input.value.trim();
+  if (url) {
+    localStorage.setItem(googleSheetUrlKey, url);
+    document.getElementById("sheet-sync-saved").hidden = false;
+    showToast("Google Sheets URL saved. Progress will sync automatically.");
+  } else {
+    localStorage.removeItem(googleSheetUrlKey);
+    document.getElementById("sheet-sync-saved").hidden = true;
+    showToast("Google Sheets URL cleared.", true);
+  }
+});
+
+// Adjust auth dialog for static mode (no server = no passwords needed)
+document.getElementById("auth-dialog").addEventListener("toggle", () => {
+  if (!staticMode) return;
+  const passwordField = document.getElementById("password-field");
+  const sheetCard = document.getElementById("sheet-sync-card");
+  const localNote = document.getElementById("auth-local-note");
+  if (passwordField) passwordField.hidden = true;
+  if (sheetCard) sheetCard.hidden = false;
+  if (localNote) localNote.textContent = "Progress saved in your browser. Sign in to set a display name.";
+  const urlInput = document.getElementById("sheet-url-input");
+  const existing = localStorage.getItem(googleSheetUrlKey);
+  if (existing && urlInput) {
+    urlInput.value = existing;
+    const saved = document.getElementById("sheet-sync-saved");
+    if (saved) saved.hidden = false;
+  }
+});
+
+
 document.getElementById("about-open").addEventListener("click", () => document.getElementById("about-dialog").showModal());
 document.getElementById("about-close").addEventListener("click", () => document.getElementById("about-dialog").close());
 document.getElementById("about-done").addEventListener("click", () => document.getElementById("about-dialog").close());
@@ -3159,10 +3330,13 @@ async function initialize() {
     renderBadges();
   } catch (error) {
     console.error("Could not initialize the academy.", error);
-    document.getElementById("continue-title").textContent = "Could not connect to the academy";
-    document.getElementById("continue-description").textContent = `${error.message} Start the local server with python3 server.py.`;
+    const hint = staticMode
+      ? "The course data files could not be loaded. Ensure course.json, beginner_course.json, pydsml_course.json, and library.json are present."
+      : `${error.message} Start the local server with python3 server.py.`;
+    document.getElementById("continue-title").textContent = "Could not load the academy";
+    document.getElementById("continue-description").textContent = hint;
     document.getElementById("continue-button").disabled = true;
-    document.getElementById("module-grid").innerHTML = `<p class="empty-search">${escapeHtml(error.message)} Start the local server with <code>python3 server.py</code>.</p>`;
+    document.getElementById("module-grid").innerHTML = `<p class="empty-search">${escapeHtml(hint)}</p>`;
   }
 }
 

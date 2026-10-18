@@ -269,13 +269,22 @@
         <p class="auth-description" id="auth-description">Sign in to sync your learning progress across sessions.</p>
         <label id="name-field" hidden>Your name<input name="name" autocomplete="name" maxlength="80"></label>
         <label>Email address<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
-        <label>Password<input name="password" type="password" autocomplete="current-password" minlength="10" maxlength="256" required></label>
+        <label id="password-field">Password<input name="password" type="password" autocomplete="current-password" minlength="10" maxlength="256" required></label>
         <p class="auth-error" id="auth-error" role="alert"></p>
         <button class="button button-dark auth-submit" id="auth-submit" type="submit">Sign in</button>
         <p class="auth-switch" id="auth-switch-copy">New here? <button type="button" id="auth-switch">Create an account</button></p>
-        <p class="auth-local-note">Accounts and learning progress are stored in this local installation.</p>
+        <p class="auth-local-note" id="auth-local-note">Accounts and learning progress are stored in this local installation.</p>
+        <!-- Google Sheets Cloud Sync — shown in static mode only -->
+        <div class="sheet-sync-card" id="sheet-sync-card" hidden>
+          <span class="sheet-sync-label">OPTIONAL: GOOGLE SHEETS CLOUD SYNC</span>
+          <p class="sheet-sync-desc">Paste your Google Apps Script Web App URL to automatically backup progress to a Google Sheet. <a href="https://github.com/meetmehedi/NeuroVerse-AI-ML-Learning-Hub#google-sheets-setup" target="_blank" rel="noopener">Setup guide</a></p>
+          <label class="sheet-sync-label-field">Apps Script URL<input type="url" id="sheet-url-input" placeholder="https://script.google.com/macros/s/..." autocomplete="off" maxlength="512"></label>
+          <button class="button button-light sheet-sync-save" type="button" id="sheet-url-save">Save URL</button>
+          <p class="sheet-sync-saved" id="sheet-sync-saved" hidden>Connected. Progress will sync automatically.</p>
+        </div>
       </form>
     </dialog>
+
     <dialog class="about-dialog" id="about-dialog" aria-labelledby="about-title">
       <button class="dialog-close" id="about-close" type="button" aria-label="Close about panel">×</button>
       <p class="eyebrow">ABOUT THE LAB</p>
