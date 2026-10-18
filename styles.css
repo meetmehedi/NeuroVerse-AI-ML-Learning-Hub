@@ -968,7 +968,12 @@ dialog::backdrop {
   overflow: hidden;
   transition: all 0.3s ease;
 }
-.institution-brand { align-self: center; }
+.institution-brand {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 .lab-logo-card {
   display: inline-flex;
   align-items: center;
