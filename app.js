@@ -3495,6 +3495,23 @@ if (certRecipientInput) {
   });
 }
 
+// Hero Action Buttons
+const heroResumeBtn = document.getElementById("hero-resume-btn");
+if (heroResumeBtn) {
+  heroResumeBtn.addEventListener("click", () => {
+    const continueBtn = document.getElementById("continue-button");
+    if (continueBtn) continueBtn.click();
+  });
+}
+
+const heroPfBtn2 = document.getElementById("hero-pathfinder-btn-2");
+if (heroPfBtn2) {
+  heroPfBtn2.addEventListener("click", () => {
+    const obDialog = document.getElementById("onboarding-dialog");
+    if (obDialog && typeof obDialog.showModal === "function") obDialog.showModal();
+  });
+}
+
 // Course Search
 document.getElementById("course-search").addEventListener("input", (event) => showSearch(event.currentTarget.value));
 document.getElementById("course-search").addEventListener("keydown", (event) => {

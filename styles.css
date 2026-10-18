@@ -163,21 +163,39 @@ button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 3px sol
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #6e756d;
   cursor: pointer;
   display: flex;
   gap: 10px;
-  min-height: 35px;
-  padding: 5px 8px;
+  min-height: 36px;
+  padding: 6px 10px;
   text-align: left;
   width: 100%;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.chapter-link:hover { background: #f0f2ec; color: var(--ink); }
-.chapter-link.is-current { background: var(--green-pale); color: var(--green-dark); }
+.chapter-link:hover {
+  background: var(--glass-card);
+  color: var(--ink);
+  transform: translateX(2px);
+}
+.chapter-link.is-current {
+  background: var(--glass-pill-active);
+  color: var(--ink);
+  font-weight: 600;
+  border: 1px solid var(--glass-border);
+}
 .chapter-number { color: #a3a89f; font-family: var(--mono); font-size: 9px; min-width: 20px; }
-.chapter-link.is-current .chapter-number { color: var(--green); }
-.chapter-title { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chapter-link.is-current .chapter-number { color: var(--green); font-weight: 700; }
+.chapter-title {
+  font-size: 11px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .chapter-check { color: var(--green); font-size: 12px; margin-left: auto; }
 .sidebar-bottom { border-top: 1px solid var(--line); margin-top: 14px; padding: 15px 7px 0; }
 .edition-mark { align-items: center; color: #81887f; display: flex; font-size: 8px; gap: 7px; }
@@ -352,8 +370,52 @@ button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 3px sol
 .eyebrow { color: #8c9489; font-size: 8px; letter-spacing: 1.1px; margin: 0 0 10px; }
 .eyebrow-line { background: var(--orange); display: inline-block; height: 1px; margin: 0 8px 3px 0; width: 17px; }
 h1 { font-family: var(--serif); font-size: clamp(37px, 4.1vw, 54px); font-weight: 500; letter-spacing: -1.7px; line-height: 1.06; margin: 0; }
-h1 em { color: var(--green); font-weight: 500; }
-.welcome-copy { color: #777e75; font-size: 12px; line-height: 1.7; margin: 13px 0 0; max-width: 455px; }
+.welcome-lead {
+  max-width: 600px;
+}
+.welcome-copy { color: #777e75; font-size: 12px; line-height: 1.7; margin: 13px 0 0; max-width: 495px; }
+.welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+.hero-start-btn {
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(45, 105, 63, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.hero-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(45, 105, 63, 0.5);
+}
+.hero-tool-btn {
+  padding: 9px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  color: var(--ink);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.hero-tool-btn:hover {
+  background: var(--glass-pill-active);
+  transform: translateY(-2px);
+  border-color: var(--green);
+}
 .hero-stamp { align-items: center; color: #adc3b1; display: flex; height: 130px; justify-content: center; margin-right: 12px; position: relative; width: 130px; }
 .hero-stamp svg { height: 130px; position: absolute; width: 130px; }
 .hero-stamp > span { color: var(--green); font-family: var(--serif); font-size: 37px; line-height: 1; margin-right: 4px; z-index: 1; }
@@ -890,9 +952,49 @@ dialog::backdrop {
 .brand-copy strong span { color: #218cbe; }
 .brand-copy small { font-size: 8px; letter-spacing: 1.3px; }
 .sidebar-bottom p em { font-style: normal; }
-.institution-panel { background: linear-gradient(112deg, #f4f7f1 0%, #eef4ed 54%, #eff5f5 100%); border: 1px solid #e1e9df; border-radius: 8px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: -13px 0 25px; padding: 18px 21px; }
+.institution-panel {
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow-soft);
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin: -10px 0 28px;
+  padding: 24px 26px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
 .institution-brand { align-self: center; }
-.lab-logo { background: #fff; border: 1px solid #e7ebe4; border-radius: 5px; display: block; height: 54px; margin-bottom: 11px; object-fit: cover; object-position: center 50%; width: 200px; }
+.lab-logo-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 6px 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: transform 0.25s ease;
+}
+.lab-logo-card:hover {
+  transform: translateY(-2px);
+}
+.lab-logo {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  display: block;
+  height: 38px;
+  margin: 0;
+  object-fit: contain;
+  width: auto;
+  max-width: 180px;
+}
 .institution-kicker { color: #758373; font-family: var(--mono); font-size: 7px; letter-spacing: .7px; }
 .institution-brand h2 { font-size: 20px; line-height: 1.26; margin: 7px 0; }
 .institution-brand h2 em { color: var(--green); }
@@ -1293,15 +1395,47 @@ dialog::backdrop {
 :root[data-theme="dark"] .about-statements section { background: #202c22; border-color: #38483a; }
 :root[data-theme="dark"] .about-statements section:last-child { background: #202b2d; border-color: #39474a; }
 :root[data-theme="dark"] .about-statements p { color: #c0cbbd; }
-:root[data-theme="dark"] .institution-panel { background: linear-gradient(112deg, #1b251d 0%, #202b22 54%, #202b2e 100%); border-color: #344237; }
+:root[data-theme="dark"] .institution-panel {
+  background: var(--glass-card);
+  border-color: var(--glass-border);
+}
+:root[data-theme="dark"] .lab-logo-card {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(60, 180, 120, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+:root[data-theme="dark"] .topbar-tools-btn {
+  background: var(--glass-card);
+  border-color: var(--glass-border);
+  color: var(--ink);
+}
+:root[data-theme="dark"] .topbar-tools-btn:hover {
+  background: var(--glass-pill-active);
+  border-color: var(--green);
+}
+:root[data-theme="dark"] .topbar-tools-menu {
+  background: var(--glass-dialog);
+  border-color: var(--glass-border);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  box-shadow: var(--glass-dialog-shadow);
+}
+:root[data-theme="dark"] .diagnostic-banner {
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-shadow-soft);
+}
+:root[data-theme="dark"] .diagnostic-copy h2 {
+  color: #8edfae;
+}
 :root[data-theme="dark"] .institution-kicker { color: #aab9a7; }
 :root[data-theme="dark"] .institution-brand > p { color: #aab5a8; }
 :root[data-theme="dark"] .institution-statement { border-color: #3a493c; }
 :root[data-theme="dark"] .institution-statement p { color: #bcc8b9; }
 :root[data-theme="dark"] .vision-statement .statement-label { color: #79c0de; }
 :root[data-theme="dark"] .vision-statement .statement-icon { background: #293b3d; color: #79c0de; }
-:root[data-theme="dark"] .lab-logo,
-:root[data-theme="dark"] .about-logo { border-color: #e7ebe4; }
 :root[data-theme="dark"] .theme-toggle { background: #222b24; border-color: #3b483d; color: #edcb78; }
 :root[data-theme="dark"] .theme-toggle:hover { background: #2e3b30; color: #ffe5a2; }
 :root[data-theme="dark"] .course-switch { background: #202820; }

@@ -124,10 +124,15 @@
 
         <section id="dashboard-view" class="dashboard-view">
           <div class="welcome-row">
-            <div>
+            <div class="welcome-lead">
               <p class="eyebrow"><span class="eyebrow-line"></span> YOUR RESEARCH JOURNEY</p>
               <h1>Good research starts<br>with a <em>good question.</em></h1>
               <p class="welcome-copy">Build the skills to move from machine learning foundations to your first research submission.</p>
+              <div class="welcome-actions">
+                <button class="button button-dark hero-start-btn" id="hero-resume-btn" type="button">Start Learning Now →</button>
+                <button class="button button-light hero-tool-btn" id="hero-sandbox-btn" type="button" onclick="if(window.openSandboxDialog)openSandboxDialog()">Python Sandbox ↗</button>
+                <button class="button button-light hero-tool-btn" id="hero-pathfinder-btn-2" type="button" onclick="if(window.openOnboardingDialog)openOnboardingDialog()">Path Finder Quiz</button>
+              </div>
             </div>
             <div class="hero-stamp" aria-label="Fourteen parts, one research journey">
               <span>14</span>
@@ -143,7 +148,9 @@
 
           <section class="institution-panel" aria-label="About NeuroVerse Research Lab">
             <div class="institution-brand">
-              <img class="lab-logo" src="./assets/neuroverse-lab-logo.jpg" alt="NeuroVerse Lab — Neural and Universal Intelligence Research Laboratory">
+              <div class="lab-logo-card">
+                <img class="lab-logo" src="./assets/neuroverse-lab-logo.jpg" alt="NeuroVerse Lab — Neural and Universal Intelligence Research Laboratory">
+              </div>
               <span class="institution-kicker">A PRODUCT OF NEUROVERSE RESEARCH LAB</span>
               <h2>Research-led learning.<br><em>Human-centered AI.</em></h2>
               <p>NeuroVerse AI/ML Learning Hub makes AI and machine-learning education practical, rigorous, and connected to real research.</p>
