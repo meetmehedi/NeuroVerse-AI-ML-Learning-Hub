@@ -277,10 +277,14 @@
         <!-- Google Sheets Cloud Sync — shown in static mode only -->
         <div class="sheet-sync-card" id="sheet-sync-card" hidden>
           <span class="sheet-sync-label">OPTIONAL: GOOGLE SHEETS CLOUD SYNC</span>
-          <p class="sheet-sync-desc">Paste your Google Apps Script Web App URL to automatically backup progress to a Google Sheet. <a href="https://github.com/meetmehedi/NeuroVerse-AI-ML-Learning-Hub#google-sheets-setup" target="_blank" rel="noopener">Setup guide</a></p>
-          <label class="sheet-sync-label-field">Apps Script URL<input type="url" id="sheet-url-input" placeholder="https://script.google.com/macros/s/..." autocomplete="off" maxlength="512"></label>
-          <button class="button button-light sheet-sync-save" type="button" id="sheet-url-save">Save URL</button>
-          <p class="sheet-sync-saved" id="sheet-sync-saved" hidden>Connected. Progress will sync automatically.</p>
+          <p class="sheet-sync-desc">Paste your Google Apps Script Web App URL to automatically backup progress to your Google Sheet. <a href="https://github.com/meetmehedi/NeuroVerse-AI-ML-Learning-Hub#google-sheets-setup" target="_blank" rel="noopener">Setup guide</a></p>
+          <label class="sheet-sync-label-field">Apps Script URL (ends in /exec)<input type="url" id="sheet-url-input" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" maxlength="512"></label>
+          <div class="sheet-sync-btns" style="display:flex;gap:6px;margin-top:6px;">
+            <button class="button button-light sheet-sync-save" type="button" id="sheet-url-save" style="flex:1;">Save URL</button>
+            <button class="button button-light sheet-sync-test" type="button" id="sheet-url-test" style="flex:1;">Test Sync</button>
+          </div>
+          <p class="sheet-sync-saved" id="sheet-sync-saved" hidden style="color:#2d693f;font-size:10px;margin-top:6px;font-weight:600;">✓ Connected. Progress will sync automatically.</p>
+          <p class="sheet-sync-error" id="sheet-sync-error" hidden style="color:#ba3a2a;font-size:10px;margin-top:6px;line-height:1.4;"></p>
         </div>
       </form>
     </dialog>

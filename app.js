@@ -2887,6 +2887,24 @@ function renderAuthMode(preserveEmail = "") {
   if (existingEmail && form.elements.email) {
     form.elements.email.value = existingEmail;
   }
+  if (staticMode) {
+    const passwordField = document.getElementById("password-field");
+    if (passwordField) passwordField.hidden = true;
+    const sheetCard = document.getElementById("sheet-sync-card");
+    if (sheetCard) sheetCard.hidden = false;
+    const localNote = document.getElementById("auth-local-note");
+    if (localNote) localNote.textContent = "Progress is saved in this browser. Configure Google Sheets below for cloud backup.";
+    const urlInput = document.getElementById("sheet-url-input");
+    const existing = localStorage.getItem(googleSheetUrlKey);
+    if (existing && urlInput) {
+      urlInput.value = existing;
+      const saved = document.getElementById("sheet-sync-saved");
+      if (saved) {
+        saved.textContent = "✓ Connected. Progress will sync automatically.";
+        saved.hidden = false;
+      }
+    }
+  }
 }
 
 async function setAccount(payload, mode) {
@@ -3075,38 +3093,101 @@ document.getElementById("auth-switch-copy").addEventListener("click", (event) =>
   }
 });
 
-// Google Sheets Cloud Sync — static mode only
-document.getElementById("sheet-url-save").addEventListener("click", () => {
-  const input = document.getElementById("sheet-url-input");
-  const url = input.value.trim();
-  if (url) {
-    localStorage.setItem(googleSheetUrlKey, url);
-    document.getElementById("sheet-sync-saved").hidden = false;
-    showToast("Google Sheets URL saved. Progress will sync automatically.");
-  } else {
-    localStorage.removeItem(googleSheetUrlKey);
-    document.getElementById("sheet-sync-saved").hidden = true;
-    showToast("Google Sheets URL cleared.", true);
-  }
-});
+// Google Sheets Cloud Sync — static mode
+const sheetSaveBtn = document.getElementById("sheet-url-save");
+const sheetTestBtn = document.getElementById("sheet-url-test");
+const sheetInput = document.getElementById("sheet-url-input");
+const sheetSaved = document.getElementById("sheet-sync-saved");
+const sheetError = document.getElementById("sheet-sync-error");
 
-// Adjust auth dialog for static mode (no server = no passwords needed)
-document.getElementById("auth-dialog").addEventListener("toggle", () => {
-  if (!staticMode) return;
-  const passwordField = document.getElementById("password-field");
-  const sheetCard = document.getElementById("sheet-sync-card");
-  const localNote = document.getElementById("auth-local-note");
-  if (passwordField) passwordField.hidden = true;
-  if (sheetCard) sheetCard.hidden = false;
-  if (localNote) localNote.textContent = "Progress saved in your browser. Sign in to set a display name.";
-  const urlInput = document.getElementById("sheet-url-input");
-  const existing = localStorage.getItem(googleSheetUrlKey);
-  if (existing && urlInput) {
-    urlInput.value = existing;
-    const saved = document.getElementById("sheet-sync-saved");
-    if (saved) saved.hidden = false;
-  }
-});
+if (sheetInput) {
+  sheetInput.addEventListener("input", () => {
+    if (sheetError) sheetError.hidden = true;
+  });
+}
+
+if (sheetSaveBtn) {
+  sheetSaveBtn.addEventListener("click", () => {
+    const url = sheetInput?.value?.trim() || "";
+    if (sheetError) sheetError.hidden = true;
+    if (sheetSaved) sheetSaved.hidden = true;
+
+    if (!url) {
+      localStorage.removeItem(googleSheetUrlKey);
+      showToast("Google Sheets URL removed.");
+      return;
+    }
+
+    if (url.includes("docs.google.com/spreadsheets")) {
+      if (sheetError) {
+        sheetError.innerHTML = "⚠️ That's the <strong>spreadsheet view link</strong>, not an Apps Script URL.<br>To connect, open <strong>Extensions &gt; Apps Script</strong> in your sheet, click <strong>Deploy &gt; New deployment &gt; Web app</strong>, and paste the URL ending in <code>/exec</code>.";
+        sheetError.hidden = false;
+      }
+      return;
+    }
+
+    if (!url.startsWith("https://script.google.com/")) {
+      if (sheetError) {
+        sheetError.innerHTML = "⚠️ Note: A Google Apps Script Web App URL starts with <code>https://script.google.com/macros/s/</code> and ends in <code>/exec</code>.";
+        sheetError.hidden = false;
+      }
+    }
+
+    localStorage.setItem(googleSheetUrlKey, url);
+    if (sheetSaved) {
+      sheetSaved.textContent = "✓ Connected. Progress will sync automatically.";
+      sheetSaved.hidden = false;
+    }
+    showToast("Google Sheets URL saved!");
+  });
+}
+
+if (sheetTestBtn) {
+  sheetTestBtn.addEventListener("click", async () => {
+    const url = sheetInput?.value?.trim() || localStorage.getItem(googleSheetUrlKey) || "";
+    if (!url) {
+      if (sheetError) {
+        sheetError.textContent = "Please paste your Apps Script URL first.";
+        sheetError.hidden = false;
+      }
+      return;
+    }
+    if (url.includes("docs.google.com/spreadsheets")) {
+      if (sheetError) {
+        sheetError.innerHTML = "⚠️ That's a spreadsheet link, not a Web App URL. Deploy a Web App in Apps Script first.";
+        sheetError.hidden = false;
+      }
+      return;
+    }
+    sheetTestBtn.disabled = true;
+    sheetTestBtn.textContent = "Pinging...";
+    try {
+      syncToGoogleSheet({
+        event: "test_connection",
+        email: app.user?.email || "student@neuroverse.ai",
+        name: app.user?.name || "Test Student",
+        course: app.courseId || "handbook",
+        track: app.track || "practitioner",
+        completed: ["test_connection_ok"]
+      });
+      if (sheetSaved) {
+        sheetSaved.textContent = "✓ Test ping sent to Google Sheet! Check your spreadsheet row.";
+        sheetSaved.hidden = false;
+      }
+      showToast("Test ping sent to your Google Sheet!");
+    } catch (e) {
+      if (sheetError) {
+        sheetError.textContent = "Could not send test ping: " + e.message;
+        sheetError.hidden = false;
+      }
+    } finally {
+      setTimeout(() => {
+        sheetTestBtn.disabled = false;
+        sheetTestBtn.textContent = "Test Sync";
+      }, 1500);
+    }
+  });
+}
 
 
 document.getElementById("about-open").addEventListener("click", () => document.getElementById("about-dialog").showModal());
