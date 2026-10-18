@@ -898,8 +898,19 @@ const mentorKnowledge = {
   }
 };
 
+function addMentorChatMessage(text, sender = "bot") {
+  const container = document.getElementById("mentor-chat-messages");
+  if (!container) return;
+  const msg = document.createElement("div");
+  msg.className = `mentor-message ${sender === "user" ? "mentor-user" : "mentor-bot"}`;
+  msg.innerHTML = text;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
 function getMentorResponse(promptType, part, index) {
-  const categoryMap = mentorKnowledge[promptType] || {};
+  const key = promptType === "intuition" ? "math" : promptType === "practical" ? "industry" : promptType;
+  const categoryMap = mentorKnowledge[key] || mentorKnowledge.eli5 || {};
   const specific = categoryMap[index];
   if (specific) return specific;
   const def = categoryMap.default || "Every concept in machine learning connects a mathematical goal with an empirical optimization loop.";
@@ -910,19 +921,22 @@ function answerMentorCustom(question, part) {
   const q = question.toLowerCase();
   unlockBadge("mentor_asker");
   addXP(10, "Asked AI Mentor");
-  if (q.includes("code") || q.includes("python") || q.includes("run") || q.includes("syntax")) {
-    return `In this exercise for <strong>${escapeHtml(part.chapter)}</strong>, ensure your variables exactly match the required prompt names. You can press <code>Ctrl+Enter</code> (or <code>Cmd+Enter</code> on Mac) to run code immediately in Pyodide. If you're stuck, click "Need a hint?" or test simple sub-expressions with <code>print()</code> first.`;
+  if (q.includes("code") || q.includes("python") || q.includes("run") || q.includes("syntax") || q.includes("error") || q.includes("bug")) {
+    return `In this exercise for <strong>${escapeHtml(part.chapter)}</strong>: ensure your variables and outputs strictly match the required prompt names. You can press <code>Ctrl+Enter</code> (or <code>Cmd+Enter</code> on Mac) to run code in Pyodide anytime. If an error occurs, inspect the traceback in the console or test sub-expressions using <code>print()</code> first.`;
   }
-  if (q.includes("overfit") || q.includes("variance") || q.includes("bias") || q.includes("split")) {
-    return `A core principle in <strong>${escapeHtml(part.chapter)}</strong>: Overfitting happens when your model memorizes quirks in the training partition. Always evaluate on unseen test data, and never tune hyperparameters against the test set!`;
+  if (q.includes("overfit") || q.includes("variance") || q.includes("bias") || q.includes("split") || q.includes("generaliz")) {
+    return `A core principle in <strong>${escapeHtml(part.chapter)}</strong>: Overfitting occurs when your model memorizes quirks and noise in the training partition. Always evaluate on a held-out test set, and never tune hyperparameters against the test set!`;
   }
-  if (q.includes("formula") || q.includes("equation") || q.includes("math") || q.includes("loss")) {
-    return `The core equation for this lesson links the prediction to the true label: minimizing error via the loss function. Check the <strong>Formula Book</strong> in the Study Library (top menu) for exact derivations and formulas!`;
+  if (q.includes("formula") || q.includes("equation") || q.includes("math") || q.includes("loss") || q.includes("gradient")) {
+    return `The core equation for this lesson links your prediction to the true label by minimizing error via the objective loss function. Check the <strong>Formula Book</strong> in the Study Library (top bar) for exact mathematical derivations!`;
   }
-  if (q.includes("why") || q.includes("benefit") || q.includes("real world")) {
-    return `In industrial and academic research, <strong>${escapeHtml(part.chapter)}</strong> is critical because it avoids false assumptions and ensures reproducibility. Without this step, models fail when deployed to production.`;
+  if (q.includes("why") || q.includes("benefit") || q.includes("real world") || q.includes("industry") || q.includes("use case")) {
+    return `In academic research and production engineering, <strong>${escapeHtml(part.chapter)}</strong> is fundamental because it establishes reproducible, verifiable benchmarks. Without this step, models fail when deployed to live distributions.`;
   }
-  return `Great question about <strong>${escapeHtml(part.chapter)}</strong>! Here is the key takeaway: remember that <em>${escapeHtml(part.objective)}</em>. Start by running the worked example, then test your understanding with the knowledge check.`;
+  if (q.includes("what is") || q.includes("explain") || q.includes("how does") || q.includes("how do")) {
+    return `Regarding <strong>${escapeHtml(part.chapter)}</strong>: at its heart, <em>${escapeHtml(part.objective)}</em>. A great next step is to run the interactive code block above, modify one variable, and observe how the output responds!`;
+  }
+  return `Great question about <strong>${escapeHtml(part.chapter)}</strong>! Key takeaway: <em>${escapeHtml(part.objective)}</em>. Work through the exercise step-by-step and verify each calculation in the REPL.`;
 }
 
 // ==================== ONBOARDING DIAGNOSTIC ====================
@@ -2266,7 +2280,7 @@ function lessonMarkup(part, index) {
           <button class="mentor-preset-btn" type="button" data-prompt="practical">Real-World Application</button>
         </div>
         <div class="mentor-chat-area" id="mentor-chat-messages">
-          <div class="mentor-msg mentor-bot">
+          <div class="mentor-message mentor-bot">
             Hello researcher! I am your AI Mentor for <em>${escapeHtml(part.chapter)}</em>. Choose a quick question above or ask anything about this concept below!
           </div>
         </div>
@@ -2591,7 +2605,14 @@ function openPart(index) {
   document.querySelectorAll(".mentor-preset-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const type = btn.dataset.prompt;
-      getMentorResponse(type, part.chapter);
+      const label = btn.textContent.trim();
+      addMentorChatMessage(escapeHtml(label), "user");
+      const answer = getMentorResponse(type, part, index);
+      setTimeout(() => {
+        addMentorChatMessage(answer, "bot");
+        addXP(10, "Consulted AI Mentor");
+        unlockBadge("mentor_asker");
+      }, 300);
     });
   });
   const mentorForm = document.getElementById("mentor-chat-form");
@@ -2600,8 +2621,13 @@ function openPart(index) {
       e.preventDefault();
       const input = document.getElementById("mentor-chat-input");
       if (input && input.value.trim()) {
-        answerMentorCustom(input.value.trim(), part.chapter);
+        const question = input.value.trim();
+        addMentorChatMessage(escapeHtml(question), "user");
         input.value = "";
+        setTimeout(() => {
+          const answer = answerMentorCustom(question, part);
+          addMentorChatMessage(answer, "bot");
+        }, 400);
       }
     });
   }

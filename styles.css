@@ -1859,33 +1859,39 @@ dialog::backdrop {
   border-radius: 4px;
   font-weight: 700;
 }
-.mentor-presets {
+.mentor-presets, .mentor-prompt-chips {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 14px;
 }
 .mentor-preset-btn {
-  background: #f4f6f3;
-  border: 1px solid #dde3db;
-  border-radius: 6px;
-  padding: 6px 10px;
+  background: var(--glass-pill);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 6px 12px;
   font-size: 11px;
-  color: #3b4d41;
+  font-weight: 600;
+  color: var(--ink);
   cursor: pointer;
-  transition: all .15s ease;
+  transition: all .2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .mentor-preset-btn:hover {
-  background: var(--green-pale);
-  border-color: #a7cbb4;
-  color: var(--green-dark);
+  background: var(--glass-pill-active);
+  border-color: var(--green);
+  transform: translateY(-1px);
 }
 .mentor-chat-area {
-  max-height: 240px;
+  max-height: 260px;
   overflow-y: auto;
-  background: #f9fbf9;
-  border: 1px solid #e2e8e2;
-  border-radius: 8px;
+  scroll-behavior: smooth;
+  background: var(--glass-card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
   padding: 14px;
   margin-bottom: 12px;
   display: flex;
@@ -1893,22 +1899,26 @@ dialog::backdrop {
   gap: 10px;
 }
 .mentor-message {
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.55;
   padding: 10px 14px;
-  border-radius: 8px;
-  max-width: 90%;
+  border-radius: 10px;
+  max-width: 88%;
 }
 .mentor-bot {
-  background: #ffffff;
-  border: 1px solid #dce6de;
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
   color: var(--ink);
   align-self: flex-start;
+  border-bottom-left-radius: 2px;
 }
 .mentor-user {
-  background: var(--green-dark);
+  background: var(--green);
   color: #ffffff;
   align-self: flex-end;
+  border-bottom-right-radius: 2px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(45, 105, 63, 0.3);
 }
 .mentor-input-row {
   display: flex;
