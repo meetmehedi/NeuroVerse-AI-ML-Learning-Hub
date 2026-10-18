@@ -820,7 +820,11 @@ h2 { font-family: var(--serif); font-size: 23px; font-weight: 500; letter-spacin
 .diagram-arrow-head { fill: #79927b; }
 .diagram-ordinal { fill: #889486; font-family: var(--mono); font-size: 7px; letter-spacing: 1px; }
 .diagram-caption { background: #f8faf6; border-top: 1px solid #edf0e9; color: #8b9589; font-family: var(--mono); font-size: 7px; letter-spacing: .55px; line-height: 1.5; padding: 9px 14px; }
-dialog {
+dialog:not([open]) {
+  display: none !important;
+  pointer-events: none !important;
+}
+dialog[open] {
   border: 1px solid var(--glass-border);
   border-radius: 16px;
   background: var(--glass-dialog);
@@ -1935,8 +1939,11 @@ dialog::backdrop {
   gap: 12px;
 }
 
-/* Python Sandbox Dialog */
-.sandbox-dialog {
+.sandbox-dialog:not([open]) {
+  display: none !important;
+  pointer-events: none !important;
+}
+.sandbox-dialog[open] {
   border: 1px solid var(--glass-border);
   border-radius: 18px;
   padding: 26px 30px;
@@ -2130,8 +2137,11 @@ dialog::backdrop {
   white-space: pre-wrap;
 }
 
-/* Certificate Dialog & Styling */
-.certificate-dialog {
+.certificate-dialog:not([open]) {
+  display: none !important;
+  pointer-events: none !important;
+}
+.certificate-dialog[open] {
   border: 1px solid var(--glass-border);
   border-radius: 18px;
   padding: 24px;
@@ -3123,7 +3133,7 @@ dialog::backdrop {
 
 @media (max-width: 768px) {
   /* Modals on Mobile */
-  dialog {
+  dialog[open] {
     max-width: 95vw !important;
     width: 95vw !important;
     max-height: 92vh !important;
@@ -3171,7 +3181,7 @@ dialog::backdrop {
   }
 
   /* Python Sandbox Modal */
-  .sandbox-dialog {
+  .sandbox-dialog[open] {
     width: 96vw !important;
     height: 94vh !important;
     padding: 16px 14px;
@@ -3220,7 +3230,7 @@ dialog::backdrop {
   }
 
   /* Certificate Modal */
-  .certificate-dialog {
+  .certificate-dialog[open] {
     width: 96vw !important;
     max-height: 94vh !important;
     padding: 12px;

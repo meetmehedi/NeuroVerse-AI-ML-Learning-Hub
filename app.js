@@ -1168,9 +1168,13 @@ function runSandboxCode() {
 
 function closeSandboxDialog() {
   const dialog = document.getElementById("sandbox-dialog");
-  if (dialog && typeof dialog.close === "function") {
-    dialog.close();
-  }
+  if (!dialog) return;
+  try {
+    if (typeof dialog.close === "function") {
+      dialog.close();
+    }
+  } catch (_) {}
+  dialog.removeAttribute("open");
 }
 
 window.runSandboxCode = runSandboxCode;
